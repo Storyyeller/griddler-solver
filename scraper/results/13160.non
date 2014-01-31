@@ -1,0 +1,26 @@
+catalogue "webpbn.com #13160"
+title "Small Veggies"
+by "Brian Bellis"
+copyright "&copy; Copyright 2011 by Brian Bellis"
+width 5
+height 9
+
+rows
+2
+2
+2
+2
+2
+2
+2
+2
+2
+
+columns
+0
+1,1,1,1
+9
+1,1,1,1,1
+0
+
+goal "001100110000110011000011001100001100110000110"

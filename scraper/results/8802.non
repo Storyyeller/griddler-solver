@@ -1,0 +1,25 @@
+catalogue "webpbn.com #8802"
+title "Beep, beep."
+by "Tom O'Connell"
+copyright "&copy; Copyright 2010 by Tom O'Connell"
+width 7
+height 6
+
+rows
+5
+3,2
+4
+3
+3
+3
+
+columns
+1,1
+2,2
+6
+5
+1,2
+2
+1
+
+goal "111110001110110011110001110001110001110000"

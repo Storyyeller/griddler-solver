@@ -1,0 +1,32 @@
+catalogue "webpbn.com #4641"
+title "flower"
+by "shay yatim"
+copyright "&copy; Copyright 2009 by shay yatim"
+width 10
+height 10
+
+rows
+1,1,2
+6
+6
+6
+4
+1
+2,1
+4,3
+6
+10
+
+columns
+1
+2,1
+4,4
+4,3
+10
+4,2
+5,3
+4,3
+1,1
+1
+
+goal "0010101100001111110000111111000011111100000111100000001000000110100000011110111000111111001111111111"

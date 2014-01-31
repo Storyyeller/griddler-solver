@@ -1,0 +1,33 @@
+catalogue "webpbn.com #8177"
+title "Tribute to Dinah Shore"
+by "Josh Greifer"
+copyright "&copy; Copyright 2011 by Josh Greifer"
+width 12
+height 9
+
+rows
+1,2
+3
+3
+2,1
+2,3
+2,2
+5
+3,1
+4,3
+
+columns
+1
+1
+2
+3
+3
+3
+2,3
+2,2,1
+1,1,2,1
+4
+2,1
+2
+
+goal "000000001011000000000111000000011100000000110100000001101110000011011000000111110000001110100000111100111000"

@@ -1,0 +1,32 @@
+catalogue "webpbn.com #1890"
+title "Mountain"
+by "Julia Koelpin"
+copyright "&copy; Copyright 2007 by Julia Koelpin"
+width 10
+height 10
+
+rows
+0
+0
+0
+0
+0
+2
+4
+6
+8
+10
+
+columns
+1
+2
+3
+4
+5
+5
+4
+3
+2
+1
+
+goal "0000000000000000000000000000000000000000000000000000001100000001111000001111110001111111101111111111"

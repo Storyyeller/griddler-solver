@@ -1,0 +1,22 @@
+This files in this directory are in a format designed to be used by the
+following programs:
+
+ * Steve Simpson's Nonogram Solver
+   http://www.comp.lancs.ac.uk/~ss/software/nonowimp/
+
+ * Kuang-che Wu's Naughty
+   http://kcwu.csie.org/~kcwu/nonogram/naughty/
+
+ * Jan Wolter's pbnsolve
+   http://webpbn.com/pbnsolve.html
+
+Only two-color puzzles are supported.
+
+This is a fairly rich and extensible file format.  It is documented at:
+http://www.comp.lancs.ac.uk/~ss/nonogram/fmt2
+
+The examples in this directory include an image of the goal solution as well
+as the clues.  Simpson's program will ignore this and it is not part of
+Simpson's original file definition, but it can be used by pbnsolve.
+Documentation for these extensions is in the README file for the pbnsolve
+program.

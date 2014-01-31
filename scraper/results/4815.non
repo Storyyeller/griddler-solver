@@ -1,0 +1,27 @@
+catalogue "webpbn.com #4815"
+title "tired"
+by "vindersloon"
+copyright "&copy; Copyright 2009 by vindersloon"
+width 10
+height 5
+
+rows
+2
+4,3
+5,3
+2,2,3
+3,2,3
+
+columns
+3
+4
+3,1
+4
+4
+1
+2
+4
+4
+1,1
+
+goal "00110000000111100111111110111011011011101110110111"

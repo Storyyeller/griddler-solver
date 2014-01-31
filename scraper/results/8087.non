@@ -1,0 +1,32 @@
+catalogue "webpbn.com #8087"
+title "80s fun"
+by "Josh Greifer"
+copyright "&copy; Copyright 2010 by Josh Greifer"
+width 11
+height 9
+
+rows
+1,1
+1,1
+7
+2,3,2
+11
+11
+1,7,1
+1,1,1,1
+2,2
+
+columns
+4
+3
+1,6
+2,3,1
+5,1
+5
+5,1
+2,3,1
+1,6
+3
+4
+
+goal "001000001000001000100000111111100011011101101111111111111111111111101111111011010000010100011011000"

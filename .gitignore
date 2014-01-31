@@ -1,0 +1,6 @@
+*.txt
+*.pyc
+*.pyo
+*.dot
+objgraph.py
+backup

@@ -1,0 +1,32 @@
+catalogue "webpbn.com #4419"
+title "litelle rabit "
+by "shay yatim"
+copyright "&copy; Copyright 2008 by shay yatim"
+width 10
+height 10
+
+rows
+4
+4
+4
+1,2,3,1
+10
+10
+6
+6
+2,2
+2,4
+
+columns
+3
+1,2
+4,1
+9
+3,5
+2,5,1
+2,5,1
+1,7
+6
+3
+
+goal "0000111100000111100001111000001011011101111111111111111111110001111110000111111000011001100011011110"
