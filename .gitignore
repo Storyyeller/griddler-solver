@@ -2,5 +2,5 @@
 *.pyc
 *.pyo
 *.dot
-objgraph.py
-backup
+python/objgraph.py
+python/backup
