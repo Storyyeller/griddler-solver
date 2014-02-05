@@ -267,7 +267,7 @@ def getStats(data):
 	if puz.solved():
 		return 'adjacent'
 
-	if puz.count() <= 1464:
+	if puz.count() <= 9964:
 		with Timer("Path creation/solve time"):
 			puz2 = createPathPuzzle(puz)
 			puz2.simplify()
@@ -275,6 +275,13 @@ def getStats(data):
 				return 'path'
 		assert(puz2.valid())
 	return 'unsolved'
+
+import time
+def getStatsAndTime(data):
+	t0 = time.time()
+	res = getStats(data)
+	return res, time.time()-t0
+
 
 def solve(data):
 	with Timer("total solve time"):

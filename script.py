@@ -1,7 +1,7 @@
 import os, operator, collections, random, itertools
 
-from solver import solve, getStats, solveDFS, getMultipleSolutions
-from util import Timer
+from solver import solve, getStats, solveDFS, getMultipleSolutions, getStatsAndTime
+from util import Timer, groupby
 
 # puzzle_raw = [
 # 	[[1,5],[1,1,3],[1,1,2],[2,2],[1,7],[8],[2,5],[4],[2],[2]],
@@ -82,21 +82,32 @@ stats = {}
 
 results = dict(map(str.split, open('multiple.txt','r').read().split('\n')))
 done = set()
+times = []
 
 with Timer("total solving time"):
 	for fname in os.listdir(dirname):
 		if fname in done or results.get(fname, 'False') == 'True':
 			continue
 
-		print 'trying', fname
+		# print 'trying', fname
 		path = os.path.join(dirname, fname)
 		puzzle_raw = parseFile(path)
-		result = getStats(puzzle_raw)
+		# result = getStats(puzzle_raw)
+		result, dur = getStatsAndTime(puzzle_raw)
 		stats[fname] = result
+		if result != 'skipped':
+			times.append(dur)
 		done.add(fname)
 		print fname, result
 	print collections.Counter(stats.values())
+bad = groupby(stats, stats.get)['unsolved']
 open('unsolved.txt','w').write(' '.join(sorted(bad)))
+
+times = sorted(times)
+print len(times), sum(times)/len(times), times[len(times)//2]
+for cutoff in [1.0, 3.1, 10.0]:
+	print len([t for t in times if t < cutoff])
+print times[-20:]
 
 # unsolved = open('unsolved.txt','r').read().split()
 # results['11820.non'] = 'True'
@@ -126,13 +137,13 @@ open('unsolved.txt','w').write(' '.join(sorted(bad)))
 # puzzle_raw = parseFile(os.path.join('sample-simpson', 'knotty.non'))
 
 # dom_clues = [[3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1]]
-# dom_clues = [[3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1]]
+# dom_clues = [[3],[1]] + [[1,3],[1]]*26 + [[1]]
 # puzzle_raw = [dom_clues, dom_clues]
-# puzzle_raw = parseFile(os.path.join(dirname, '27.non'))
+# puzzle_raw = parseFile(os.path.join(dirname, '8274.non'))
 # for sol in list(solve(puzzle_raw)):
 # 	print sol.count()
 # 	print printSolution(sol)
 
 # puz = solve(puzzle_raw)
-# print puz.count()
 # print printSolution(puz)
+# print puz.count(), 'squares left'

@@ -261,15 +261,12 @@ class Puzzle(object):
 		if None in rns:
 			return None
 		sets = [set(rn.choices) for rn in rns]
-		pairs = []
+		implies = [{}, {}]
 		for (v1, s1), (v2, s2) in itertools.product(enumerate(sets[:2]), enumerate(sets[2:])):
-			if s1 & s2:
-				pairs.append((v1, v2))
-		if pairs == [(0,1), (1, 0)]:
-			return 'opposite'
-		elif pairs == [(0,0), (1, 1)]:
-			return 'same'
-		return None
+			if not s1 & s2:
+				implies[0][v1] = v2 ^ 1
+				implies[1][v2] = v1 ^ 1
+		return implies
 
 	def simplifyRows(self):
 		nrows, ncols = self.size
@@ -292,6 +289,9 @@ class Puzzle(object):
 					R2 = R1+1
 					implies = {}
 
+					# if t == 'r' and R1 == 0:
+					# 	import pdb;pdb.set_trace()
+
 					for C in inds2:
 						if doRow:
 							k1, k2 = (R1, C), (R2, C)
@@ -301,10 +301,18 @@ class Puzzle(object):
 						relation = self.getCellPairRelation(rnodes, tp, k1, k2)
 						if relation is None:
 							continue
-						const = 1 if relation == 'opposite' else 0
+
 						for i in range(2):
-							implies[cnodes[k1], i] = cnodes[k2], i ^ const ^ 1 # ^1 because we want a contradiction
-							implies[cnodes[k2], i] = cnodes[k1], i ^ const ^ 1
+							if i in relation[0]:
+								implies[cnodes[k1], i] = cnodes[k2], relation[0][i] ^ 1 # ^1 because we want a contradiction
+							if i in relation[1]:
+								implies[cnodes[k2], i] = cnodes[k1], relation[1][i] ^ 1 # ^1 because we want a contradiction
+
+					# if t == 'r' and R1 == 0:
+					# 	print t, R1, R2, len(implies)
+					# 	for cn, cv in implies:
+					# 		cn2, cv2 = implies[cn, cv]
+					# 		print '{} = {} -> {} = {}'.format(cn.key, cv, cn2.key, cv2)
 
 					near_gaps = [gn for gn in self.gaps if len(gn.vals) > 1 and gn.key[0] == t and gn.key[1] in (R1, R2)]
 					for gn in near_gaps:
