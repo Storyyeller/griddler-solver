@@ -25,7 +25,7 @@
 // newvals is array of [square, [vals]] pairs with white = 0 and black = 1
 // For example, to show that square 58 and 60 are known to be white, it would send newvals:[[58, [0]], [60, [0]]]
 
-var solver = function () {
+var solver = function() {
     var _add = function(a,b) {return a+b;};
     var sum = function(seq) {return seq.reduce(_add, 0);};
 
@@ -44,7 +44,6 @@ var solver = function () {
     var IntrusiveQueue = function(vals) {
         this.q = [];
         vals = vals || [];
-        // postMessage("vals " + vals.length + " " + vals);
         for(var i=0; i<vals.length; ++i) {this.push(vals[i]);}
     };
     IntrusiveQueue.prototype.nonempty = function() {return this.q.length > 0;};
@@ -53,7 +52,6 @@ var solver = function () {
         return this.q.shift();
     };
     IntrusiveQueue.prototype.push = function(x) {
-        // postMessage("trying to add " + x.key_data + " old " + x.inqueue);
         if (x.inqueue === false) {
             this.q.push(x);
             x.inqueue = true;
@@ -98,7 +96,7 @@ var solver = function () {
     GapNode.prototype.update = function(puz) {
         // postMessage("Updating gap " + this.key_data);
         // if (this.vals.length === 0) {postMessage(this.key_data + " ngs " + this.vals);}
-        intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneCell.bind(puz));
+        intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneCell, puz);
         intersectForbidden(this.vals, this.adj_forbidden).forEach(puz.pruneGap, puz);
     };
 
@@ -145,7 +143,7 @@ var solver = function () {
     Puzzle.prototype.checkYield = function(msg_type, callback) {
         if (this.newcell_prunes.length > 0) {
             var msg = {type:msg_type, newvals:this.newcell_prunes};
-            callback(JSON.stringify(msg));
+            callback(msg);
             this.newcell_prunes = [];
         }
 
