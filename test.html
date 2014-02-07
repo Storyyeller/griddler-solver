@@ -1,0 +1,44 @@
+<html>
+<body>
+<pre id="foo"></pre>
+
+<script>
+
+function writeText(s) {
+    document.getElementById('foo').appendChild(document.createTextNode(s));
+    document.getElementById('foo').appendChild(document.createElement('br'));
+};
+
+function writeLines(s) {
+    var lines = s.split("\n");
+    for(var i=0; i<lines.length; ++i) {writeText(lines[i]);}
+};
+
+// var puzzle = {
+//     rows:[[2], [2], [2, 2, 2], [4, 1, 3], [9, 4], [2, 4, 7], [1, 3, 2, 4], [1, 1, 2, 2], [3, 3], [4, 4], [16], [19], [21], [6, 15], [2, 6, 7], [7, 3, 5], [5, 4, 2], [4], [4], [3]],
+//     cols:[[1, 2, 1], [1, 2, 2], [2, 3], [4, 2, 1], [3, 1, 3, 1], [3, 6], [2, 2, 3], [1, 1, 7], [3, 1, 7], [1, 2, 7], [5], [4, 2], [1, 4, 3], [2, 1, 4, 4], [3, 2, 6, 3], [4, 8, 3], [3, 10, 2], [2, 10, 1], [3, 6], [2, 7], [10], [8], [5]],
+//     grid:null
+// };
+
+var puzzle = {
+    'rows': [[2], [1, 1], [1, 1, 1], [1, 6, 2], [3, 4], [1, 2, 2, 2], [4, 2, 1], [1, 3, 2, 5], [2, 2, 2, 2], [4, 2, 3], [2, 2, 4, 1], [3, 2, 2], [1, 2, 3, 1], [2, 4], [5, 1]],
+    'cols': [[1, 5], [4, 2], [1, 3, 2, 1], [2, 2, 3], [1, 4, 2, 2], [3, 2, 4], [2, 2, 2, 2], [5, 2, 3, 1], [1, 2, 4], [2, 2, 2, 1], [4, 3], [2, 6, 1], [1, 1, 1], [1, 1], [2]],
+    grid:null
+};
+
+// puzzle.rows = [[1,1], [], [1], [1], [1]];
+// puzzle.cols = [[1,1], [], [1], [1], [1]];
+
+var worker = new Worker('solver.js');
+worker.addEventListener('message', function(e) {
+  writeLines(e.data);
+  // writeLines('Worker said: ' + e.data);
+}, false);
+worker.addEventListener('error', function(e) {
+  writeLines('Worker error: ' + e.lineno + ' ' + e.message);
+}, false);
+worker.postMessage(puzzle);
+</script>
+
+</body>
+</html>

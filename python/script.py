@@ -76,38 +76,38 @@ def printSolution(puz):
 # 		del puz, gapvals, puzzle_raw, n
 # 		gc.collect()
 
-# dirname = os.path.join('scraper','results')
-dirname = os.path.join('hardtests')
-stats = {}
+dirname = os.path.join('scraper','results')
+# dirname = os.path.join('hardtests')
+# stats = {}
 
-results = dict(map(str.split, open('multiple.txt','r').read().split('\n')))
-done = set()
-times = []
+# results = dict(map(str.split, open('multiple.txt','r').read().split('\n')))
+# done = set()
+# times = []
 
-with Timer("total solving time"):
-	for fname in os.listdir(dirname):
-		if fname in done or results.get(fname, 'False') == 'True':
-			continue
+# with Timer("total solving time"):
+# 	for fname in os.listdir(dirname):
+# 		if fname in done or results.get(fname, 'False') == 'True':
+# 			continue
 
-		# print 'trying', fname
-		path = os.path.join(dirname, fname)
-		puzzle_raw = parseFile(path)
-		# result = getStats(puzzle_raw)
-		result, dur = getStatsAndTime(puzzle_raw)
-		stats[fname] = result
-		if result != 'skipped':
-			times.append(dur)
-		done.add(fname)
-		print fname, result
-	print collections.Counter(stats.values())
-bad = groupby(stats, stats.get)['unsolved']
-open('unsolved.txt','w').write(' '.join(sorted(bad)))
+# 		# print 'trying', fname
+# 		path = os.path.join(dirname, fname)
+# 		puzzle_raw = parseFile(path)
+# 		# result = getStats(puzzle_raw)
+# 		result, dur = getStatsAndTime(puzzle_raw)
+# 		stats[fname] = result
+# 		if result != 'skipped':
+# 			times.append(dur)
+# 		done.add(fname)
+# 		print fname, result
+# 	print collections.Counter(stats.values())
+# bad = groupby(stats, stats.get)['unsolved']
+# open('unsolved.txt','w').write(' '.join(sorted(bad)))
 
-times = sorted(times)
-print len(times), sum(times)/len(times), times[len(times)//2]
-for cutoff in [1.0, 3.1, 10.0]:
-	print len([t for t in times if t < cutoff])
-print times[-20:]
+# times = sorted(times)
+# print len(times), sum(times)/len(times), times[len(times)//2]
+# for cutoff in [1.0, 3.1, 10.0]:
+# 	print len([t for t in times if t < cutoff])
+# print times[-20:]
 
 # unsolved = open('unsolved.txt','r').read().split()
 # results['11820.non'] = 'True'
@@ -133,7 +133,7 @@ print times[-20:]
 # open('multiple.txt','w').write(data)
 
 
-# puzzle_raw = parseFile(os.path.join(dirname, '10043.non'))
+puzzle_raw = parseFile(os.path.join(dirname, '10101.non'))
 # puzzle_raw = parseFile(os.path.join('sample-simpson', 'knotty.non'))
 
 # dom_clues = [[3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1,3],[1],[1]]
@@ -144,6 +144,13 @@ print times[-20:]
 # 	print sol.count()
 # 	print printSolution(sol)
 
-# puz = solve(puzzle_raw)
-# print printSolution(puz)
+puz = solve(puzzle_raw)
+print printSolution(puz)
 # print puz.count(), 'squares left'
+print puzzle_raw
+# gns = {gn.key:gn for gn in puz.gaps}
+# gn = gns['r',10,0]
+# print gn.vals
+
+data = {'rows':puzzle_raw[0], 'cols':puzzle_raw[1]}
+open('temp.txt','w').write(str(data))

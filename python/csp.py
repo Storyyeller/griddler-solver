@@ -61,13 +61,13 @@ class MarkNode(object):
 			if oldvals == self.vals:
 				break
 
-		if 1 < min(len(vn1.vals), len(vn2.vals)) <= len(self.vals):
-			lists1 = groupby(vn1.vals, key=lambda t:t[-1])
-			lists2 = groupby(vn2.vals, key=lambda t:t[0]-self.size)
-			if all(len(v) <= 1 for v in lists2.values()):
-				self.merge(0, lists2, dirty, puz)
-			elif all(len(v) <= 1 for v in lists1.values()):
-				self.merge(1, lists1, dirty, puz)
+		# if 1 < min(len(vn1.vals), len(vn2.vals)) <= len(self.vals):
+		# 	lists1 = groupby(vn1.vals, key=lambda t:t[-1])
+		# 	lists2 = groupby(vn2.vals, key=lambda t:t[0]-self.size)
+		# 	if all(len(v) <= 1 for v in lists2.values()):
+		# 		self.merge(0, lists2, dirty, puz)
+		# 	elif all(len(v) <= 1 for v in lists1.values()):
+		# 		self.merge(1, lists1, dirty, puz)
 
 	def merge(self, which, othervals, dirty, puz):
 		vmap = collections.defaultdict(list)

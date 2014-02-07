@@ -23,12 +23,15 @@ def processRowSingle(gaps, grid_row, tc, r, sizes, C):
 				stack.append((i+1, prefix + [0]*g + [1]*sizes[i]))
 	# print 'full row node with {} solutions {}'.format(len(solutions), list(sizes))
 
+	solutions = map(tuple, solutions)
 	#initialize the sets. for each solution we use simple index as value
-	gnode = GapNode((tc, r, 0), set(range(len(solutions))))
+	# gnode = GapNode((tc, r, 0), set(range(len(solutions))))
+	gnode = GapNode((tc, r, 0), set(solutions))
 	for cn in grid_row:
 		cn.edges[0][gnode] = set()
 		cn.edges[1][gnode] = set()
 	for val, pattern in enumerate(solutions):
+		val = pattern
 		gnode.edges[val] = set()
 		for cn, need in zip(grid_row, pattern):
 			gnode.edges[val].add((cn, 1-need))
