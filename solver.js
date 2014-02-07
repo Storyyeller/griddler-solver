@@ -22,8 +22,8 @@
 // Output:
 // steps of the form {type, newvals}
 // type a string describing the logic type
-// newvals is array of [square, [vals]]  with white = 0 and black = 1
-// For example, to show that square 58 and 60 are known to be black, it would send newvals:[[58, [0]], [60, [0]]]
+// newvals is array of [square, [vals]] pairs with white = 0 and black = 1
+// For example, to show that square 58 and 60 are known to be white, it would send newvals:[[58, [0]], [60, [0]]]
 
 var solver = function () {
     var _add = function(a,b) {return a+b;};
