@@ -447,7 +447,7 @@
             var puzzle = this.model.get("puzzle");
             step.newvals.forEach(function(newval) {
                 var squareIndex = newval[0];
-                var squareRow = ~~(squareIndex / puzzle.rows.length);
+                var squareRow = ~~(squareIndex / puzzle.cols.length);
                 var squareCol = squareIndex % puzzle.cols.length;
                 var squareValue = newval[1][0];
 
