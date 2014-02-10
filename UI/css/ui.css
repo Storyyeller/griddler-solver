@@ -1,3 +1,7 @@
+.ui-layout-center {
+    overflow:auto;
+}
+
 body {
     font-family: "Verdana", "Georgia", "serif";
 }
