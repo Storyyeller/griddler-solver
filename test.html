@@ -31,8 +31,8 @@ var puzzle = {
 
 var worker = new Worker('solver.js');
 worker.addEventListener('message', function(e) {
-  writeLines(e.data);
-  // writeLines('Worker said: ' + e.data);
+  // writeLines(e.data);
+  writeLines('Worker said: ' + JSON.stringify(e.data));
 }, false);
 worker.addEventListener('error', function(e) {
   writeLines('Worker error: ' + e.lineno + ' ' + e.message);
