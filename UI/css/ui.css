@@ -1,0 +1,119 @@
+body {
+    font-family: "Verdana", "Georgia", "serif";
+}
+
+#leftSidebar {
+    text-align: center;
+    color: white;
+    background-color: black;
+}
+
+#openButton {
+    width: 100px;
+}
+
+#titleText {
+    font-size: 24pt;
+}
+
+#contentArea {
+    text-align: center;
+    padding-top: 10px;
+}
+
+#puzzleContainer {
+    text-align: center;
+    margin: 0;
+}
+
+#metadataContainer {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#metadataContainer span {
+    display: block;
+}
+
+#metadataContainer .puzzleName {
+    font-weight: bold;
+    font-size: 24pt;
+}
+
+#metadataContainer .puzzleAuthor {
+    font-size: 18pt;
+}
+
+#metadataContainer .puzzleDescription {
+    font-size: 18pt;
+}
+
+#buttonsContainer {
+    margin: 10px;
+}
+
+#buttonsContainer p {
+    margin: 2px;
+}
+
+#buttonsContainer button {
+    width: 100px;
+    height: 40px;
+    border: 1px solid black;
+    background-color: #ececec;
+    vertical-align: middle;
+    margin: 2px;
+}
+
+#buttonsContainer button:hover {
+    background-color: lightgray;
+    cursor: pointer;
+}
+
+#stepInfoContainer {
+    width: 200px;
+    height: 350px;
+    display: inline-block;
+    border: 1px solid black;
+    margin-left: 20px;
+}
+
+.GriddlerView {
+    display: inline-block;
+    border: 1px solid gray;
+}
+
+.GriddlerSquare {
+    line-height: 20px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: 1px solid #3a3a3a;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.GriddlerRow {
+    line-height: 0;
+}
+
+.GriddlerHintSquare {
+    background-color: lightsteelblue;
+}
+
+.GriddlerOutOfPlaySquare {
+    border-color: transparent;
+}
+
+.GriddlerEmptySquare {
+    background-color: white;
+}
+
+.GriddlerFilledSquare {
+    background-color: black;
+}
+
+.GriddlerUnknownSquare {
+    background-color: gray;
+}
