@@ -1,0 +1,32 @@
+catalogue "webpbn.com #23490"
+title "Glider"
+by "Thomas Genuine"
+copyright "&copy; Copyright 2014 by Thomas Genuine"
+width 10
+height 10
+
+rows
+10
+3,6
+4,5
+2,5
+10
+10
+10
+10
+10
+10
+
+columns
+10
+10
+3,6
+1,1,6
+2,6
+10
+10
+10
+10
+10
+
+goal "1111111111111011111111110111111100011111111111111111111111111111111111111111111111111111111111111111"

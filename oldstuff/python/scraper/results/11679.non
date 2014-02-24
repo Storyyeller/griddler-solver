@@ -1,0 +1,25 @@
+catalogue "webpbn.com #11679"
+title "Exercise 2"
+by "Brian Bellis"
+copyright "&copy; Copyright 2011 by Brian Bellis"
+width 8
+height 5
+
+rows
+2
+2,2
+3,1
+6
+3,2
+
+columns
+2
+4
+3
+4
+1,2
+2
+2
+1
+
+goal "1100000011011000011101000111111000111011"

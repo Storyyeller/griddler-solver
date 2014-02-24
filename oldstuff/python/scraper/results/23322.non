@@ -1,0 +1,28 @@
+catalogue "webpbn.com #23322"
+title "Question"
+by "Andrew Mairose"
+copyright "&copy; Copyright 2013 by Andrew Mairose"
+width 6
+height 10
+
+rows
+4
+6
+2,2
+2
+2
+2
+2
+0
+2
+2
+
+columns
+2
+3
+2,3,2
+2,4,2
+4
+2
+
+goal "011110111111110011000110001100001100001100000000001100001100"

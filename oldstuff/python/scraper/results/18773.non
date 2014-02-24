@@ -1,0 +1,32 @@
+catalogue "webpbn.com #18773"
+title "Music to my ears"
+by "Nelson Peters"
+copyright "&copy; Copyright 2012 by Nelson Peters"
+width 10
+height 10
+
+rows
+8
+9
+1,1,1
+1,1,1
+1,2,1
+1,2,1
+1,2
+2,2
+2
+0
+
+columns
+2
+8
+2
+2
+2,2
+6
+2
+2
+2,2
+8
+
+goal "0011111111011111111101000100010100010001010011000101001100010100000011110000001111000000000000000000"

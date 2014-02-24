@@ -1,0 +1,22 @@
+catalogue "webpbn.com #11400"
+title "Another Square"
+by "Trish"
+copyright "&copy; Copyright 2010 by Trish"
+width 5
+height 5
+
+rows
+5
+3
+1
+3
+5
+
+columns
+1,1
+2,2
+5
+2,2
+1,1
+
+goal "1111101110001000111011111"

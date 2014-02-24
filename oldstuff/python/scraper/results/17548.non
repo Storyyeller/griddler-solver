@@ -1,0 +1,32 @@
+catalogue "webpbn.com #17548"
+title "Be it Ever So Humble ..."
+by "Greg Swan"
+copyright "&copy; Copyright 2012 by Greg Swan"
+width 10
+height 10
+
+rows
+2
+4
+2,2
+2,2
+2,2,2
+1,2,1
+1,2,1
+1,2,2,1
+1,2,2,1
+1,2,1
+
+columns
+6
+2
+2,2
+2,2,2
+2,2
+2
+2,4
+2,4
+2
+6
+
+goal "0000110000000111100000110011000110000110110110001110011000011000001101101100110110110011011000001101"

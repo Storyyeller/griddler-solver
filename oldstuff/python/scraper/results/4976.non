@@ -1,0 +1,27 @@
+catalogue "webpbn.com #4976"
+title "triangle"
+by "vindersloon"
+copyright "&copy; Copyright 2009 by vindersloon"
+width 9
+height 6
+
+rows
+2
+4
+2,1
+2,2
+1,4
+2,2,2
+
+columns
+3
+2,1
+2
+2
+2,2
+5
+2
+2
+1
+
+goal "000110000001111000011001000110001100100011110110011011"
