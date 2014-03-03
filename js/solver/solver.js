@@ -324,12 +324,6 @@ var solver = function() {
         assert(R <= 255 && C <= 255);
         assert(grid === null || grid.length === R*C);
 
-        if (grid === null) { //fill with 3s
-            grid = new Array(R*C);
-            var i = grid.length;
-            while(--i >= 0) {grid[i] = 3;}
-        }
-
         var cells = new Array(R*C), cells_colview = new Array(R*C);
         for(var i=0; i<R*C; ++i) {
             var row = i/C|0, col = i%C;
@@ -351,39 +345,21 @@ var solver = function() {
         }
 
         var puz = new Puzzle(R, C, cells, gaps);
-        for(var i=0; i<R*C; ++i){
-            if (grid[i] & 1 === 0) {puz.pruneCell(makePair(i, 0));}
-            if (grid[i] & 2 === 0) {puz.pruneCell(makePair(i, 1));}
+        if (grid !== null){
+            for(var i=0; i<R*C; ++i){
+                if (grid[i] & 1 === 0) {puz.pruneCell(makePair(i, 0));}
+                if (grid[i] & 2 === 0) {puz.pruneCell(makePair(i, 1));}
+            }
         }
         return puz;
     };
 
-    var printSolution = function(puz) {
-        var R=puz.R, C=puz.C, cells=puz.cells;
-        var chars = ['!','.','X','?'];
-
-        var lines = [];
-        for(var r=0; r<R; ++r){
-            var line = [];
-            for(var c=0; c<C; ++c){
-                var node = cells[r*C + c];
-                var val = node.vals.reduce(function(a,i) {return a+(1<<i);}, 0);
-                line.push(chars[val]);
-            }
-            lines.push(line.join(""));
-        }
-        return "\n" + lines.join("\n");
-    };
-
     return {
-        createPuzzle:createPuzzle,
-        printSolution:printSolution
+        createPuzzle:createPuzzle
     };
 }();
 
 onmessage = function (oEvent) {
     var puz = solver.createPuzzle(oEvent.data);
     puz.solve(postMessage);
-    // var res = solver.printSolution(puz);
-    // postMessage(res);
 };
