@@ -1,15 +1,5 @@
 "use strict";
 
-//usage
-// var worker = new Worker('solver.js');
-// worker.addEventListener('message', function(e) {
-//   console.log('Worker said: ', e.data);
-// }, false);
-// worker.addEventListener('error', function(e) {
-//   console.log('Worker error: ', e.lineno, ' ', e.message);
-// }, false);
-// worker.postMessage(puzzle);
-
 // Public API
 // Input:
 // puzzle = {rows, cols, grid}
@@ -20,10 +10,12 @@
 // There is currently no error handling, so the puzzle must be solveable
 
 // Output:
-// steps of the form {type, newvals}
+// message of form {type, data} with type = "step", "done", or "error"
+// step data of the form {type, newvals}
 // type a string describing the logic type
 // newvals is array of [square, [vals]] pairs with white = 0 and black = 1
-// For example, to show that square 58 and 60 are known to be white, it would send newvals:[[58, [0]], [60, [0]]]
+// For example, to show that square 58 and 60 are known to be white, it would send
+// {type:"step", data:{type:"line logic", newvals:[[58, [0]], [60, [0]]]}}
 
 var solver = function() {
     var _add = function(a,b) {return a+b;};
@@ -129,7 +121,6 @@ var solver = function() {
         if (discard(node.vals, val)) {
             this.cellQ.push(node);
             this.newcell_prunes.push([node.ind, node.vals]);
-            // postMessage("\tpruned " + node.key_data + " " + val);
         }
     };
     Puzzle.prototype.pruneGap = function(pair) {
@@ -137,16 +128,14 @@ var solver = function() {
         var node = this.gaps[node_ind];
         if (discard(node.vals, val)) {
             this.gapQ.push(node);
-            // postMessage("\tpruned " + node.key_data + " " + node.val_data[val]);
         }
     };
     Puzzle.prototype.checkYield = function(msg_type, callback) {
         if (this.newcell_prunes.length > 0) {
-            var msg = {type:msg_type, newvals:this.newcell_prunes};
+            var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
             callback(msg);
             this.newcell_prunes = [];
         }
-
     }
     Puzzle.prototype.simplify = function(callback) {
         while(this.cellQ.nonempty() || this.gapQ.nonempty() || this.revQ.nonempty()){
@@ -208,6 +197,9 @@ var solver = function() {
         this.simplify(callback);
         this.createReverseNodes();
         this.simplify(callback);
+
+        var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
+        callback({type:'done', data:{solved:solved}});
     };
 
     var processRowSingle = function(gaps, grid_row, tc, r, sizes) {

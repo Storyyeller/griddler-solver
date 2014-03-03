@@ -43,18 +43,32 @@
                 var spinner = new Spinner(opts).spin(self.centerContentArea[0]);
 
                 FileManager.parse(files[0], function(puzzle) {
-                    SolverAdapter.solve(puzzle, 1000, function(puzzle) {
-                        spinner.stop();
+                    puzzle.solution_steps = [];
+                    puzzle.done = false;
 
-                        if (!puzzle.solution_steps) {
-                            alert("Error solving puzzle");
-                            return;
+                    spinner.stop();
+                    self.showPuzzle(puzzle);
+
+                    SolverAdapter.solve(puzzle,
+                        {
+                            stepcb: function(data) {
+                                puzzle.solution_steps.push(data);
+                                self.puzzleView.buttonsView.updateButtonState();
+                                self.puzzleView.stepInfoView.updateStepInfo();
+                            },
+                            donecb: function(data) {
+                                puzzle.done = true;
+                                if(data.solved === false) {
+                                    alert("Unable to fully solve puzzle. Perhaps it has multiple solutions.");
+                                }
+                            },
+                            errorcb: function(data) {
+                                puzzle.done = true;
+                                alert("Error solving puzzle: " + data);
+                            }
                         }
-
-                        self.showPuzzle(puzzle);
-                    });
+                    );
                 });
-
             });
 
             input.click();
@@ -270,6 +284,9 @@
             this.nextButton[0].disabled = (this.model.get("currentStep") === this.model.get("puzzle").solution_steps.length - 1);
             this.jumpToBeginningButton[0].disabled = this.previousButton[0].disabled;
             this.jumpToSolutionButton[0].disabled = this.nextButton[0].disabled;
+
+            var curStep = this.model.get("currentStep");
+            var puz = this.model.get("puzzle");
         },
 
         render: function() {
@@ -312,8 +329,9 @@
                 var puzzle = this.model.get("puzzle");
                 var total = puzzle.solution_steps.length;
                 var comment = puzzle.solution_steps[curr].type;
+                var total2 = (puzzle.done === false) ? "+" : "";
 
-                this.$el.html("Step " + (curr + 1) + " / " + total + "<br /><br />" + comment);
+                this.$el.html("Step " + (curr + 1) + " / " + total + total2 + "<br /><br />" + comment);
             }
         },
 

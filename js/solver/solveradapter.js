@@ -1,21 +1,13 @@
 (function(exports) {
     var SolverAdapter = {};
 
-    SolverAdapter.solve = function(puzzle, timeout, callback) {
-        var steps = [];
+    SolverAdapter.solve = function(puzzle, callbacks) {
         var worker = new Worker("js/solver/solver.js");
         worker.addEventListener("message", function (e) {
-            steps.push(e.data);
+            var msg = e.data;
+            callbacks[msg.type + "cb"](msg.data);
         }, false);
         worker.postMessage(puzzle);
-
-        setTimeout(function(evt) {
-            worker.terminate();
-            if (steps.length) {
-                puzzle.solution_steps = steps;
-            }
-            callback(puzzle);
-        }, timeout);
     };
 
     exports.SolverAdapter = SolverAdapter;
