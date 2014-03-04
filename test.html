@@ -1,0 +1,85 @@
+<html>
+<body>
+<pre id="foo"></pre>
+
+<script src="python/puzzles.js"></script>
+<script src="threadpool.js"></script>
+
+<script>
+
+function writeText(s) {
+    document.getElementById('foo').appendChild(document.createTextNode(s));
+    document.getElementById('foo').appendChild(document.createElement('br'));
+};
+
+function writeLines(s) {
+    var lines = s.split("\n");
+    for(var i=0; i<lines.length; ++i) {writeText(lines[i]);}
+};
+
+
+
+var t0all = window.performance.now();
+var solved = 0;
+
+function handleDone(name, t0) {return function(e) {
+    // var time = (window.performance.now()-t0)/1000;
+    writeLines(name + " " + e.data.data.solved + " " + e.data.data.time);
+    solved += 1;
+
+    if (solved === puzzles.length) {
+        var timeAll = (window.performance.now()-t0all)/1000;
+        writeText("Total time: " + timeAll);
+    }
+
+    // solvePuzzle(puzzles, i+4);
+}};
+
+var pool = new Pool(4);
+pool.init();
+
+for(var i=0; i<puzzles.length; ++i){
+    var puzzle_raw = puzzles[i];
+    var puzzle = {rows:puzzle_raw[1], cols:puzzle_raw[2], grid:null};
+    var cb = handleDone(puzzle_raw[0], window.performance.now());
+
+    var workerTask = new WorkerTask('js/solver/solver.js', cb, puzzle);
+    pool.addWorkerTask(workerTask);
+}
+
+
+// function solvePuzzle(puzzles, i) {
+//     // console.log("solvePuzzle " + i);
+
+
+//     var puzzle_raw = puzzles[i];
+//     var puzzle = {rows:puzzle_raw[1], cols:puzzle_raw[2], grid:null};
+
+//     var handleDone = function(name, t0) {return function(e) {
+//         var time = (window.performance.now()-t0)/1000;
+//         writeLines(name + " " + e.data.data.solved + " " + time);
+//         solved += 1;
+
+//         if (solved === puzzles.length) {
+//             var timeAll = (window.performance.now()-t0all)/1000;
+//             writeText("Total time: " + timeAll);
+//         }
+
+//         // solvePuzzle(puzzles, i+4);
+//     }}(puzzle_raw[0], window.performance.now());
+
+//     var worker = new Worker('js/solver/solver.js');
+//     worker.addEventListener('message', handleDone , false);
+//     worker.addEventListener('error', function(e) {
+//         writeLines('Worker error: ' + e.lineno + ' ' + e.message);
+//     }, false);
+//     worker.postMessage(puzzle);
+// };
+// for(var i=0; i<puzzles.length; ++i){
+//     solvePuzzle(puzzles, i);
+// }
+
+</script>
+
+</body>
+</html>

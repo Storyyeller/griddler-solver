@@ -126,14 +126,15 @@ var solver = function() {
     Puzzle.prototype.pruneGap = function(pair) {
         var node_ind = hWord(pair), val = lWord(pair);
         var node = this.gaps[node_ind];
+
         if (discard(node.vals, val)) {
             this.gapQ.push(node);
         }
     };
     Puzzle.prototype.checkYield = function(msg_type, callback) {
         if (this.newcell_prunes.length > 0) {
-            var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
-            callback(msg);
+            // var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
+            // callback(msg);
             this.newcell_prunes = [];
         }
     }
@@ -193,13 +194,14 @@ var solver = function() {
         this.revQ = new IntrusiveQueue(revnodes);
         // postMessage(revnodes.length + " rnodes created");
     };
-    Puzzle.prototype.solve = function(callback) {
+    Puzzle.prototype.solve = function(callback, t0) {
         this.simplify(callback);
         this.createReverseNodes();
         this.simplify(callback);
 
         var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
-        callback({type:'done', data:{solved:solved}});
+        var time = (Date.now() - t0)/1000;
+        callback({type:'done', data:{solved:solved, time:time}});
     };
 
     var processRowSingle = function(gaps, grid_row, tc, r, sizes) {
@@ -352,6 +354,8 @@ var solver = function() {
 }();
 
 onmessage = function (oEvent) {
+    var t0 = Date.now();
     var puz = solver.createPuzzle(oEvent.data);
-    puz.solve(postMessage);
+    puz.solve(postMessage, t0);
+    self.close();
 };
