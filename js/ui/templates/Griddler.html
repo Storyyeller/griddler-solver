@@ -8,12 +8,11 @@
             <div style="display:table;">
                 <% for (var r = 0; r < maxColHints; ++r) { %>
                     <div style="display: table-row;">
-                        <% for (var c = 0; c < puzzle.cols.length; ++c) {
-                            var entryIndex = maxColHints - r - 1; %>
+                        <%
+                        for (var c = 0; c < puzzle.cols.length; ++c) {
+                            var startRow = maxColHints - puzzle.cols[c].length; %>
                             <div class="GriddlerSquare GriddlerHintSquare" style="display: table-cell;">
-                                <% if (entryIndex < puzzle.cols[c].length) { %>
-                                    <%= puzzle.cols[c][entryIndex] %>
-                                <% } %>
+                                <% if (r >= startRow) print(puzzle.cols[c][r - startRow]); %>
                             </div>
                         <% } %>
                     </div>
