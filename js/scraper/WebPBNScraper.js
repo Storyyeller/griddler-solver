@@ -2,7 +2,7 @@
     var WebPBNScraper = {};
 
     WebPBNScraper.scrape = function(id, callback) {
-        $.post("http://webpbn.com/export.cgi", {
+        $.post("/__proxy__/webpbn.com/export.cgi", {
             go: "1",
             sid: "",
             id: id,
