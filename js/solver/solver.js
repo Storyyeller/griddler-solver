@@ -17,15 +17,8 @@
 // For example, to show that square 58 and 60 are known to be white, it would send
 // {type:"step", data:{type:"line logic", newvals:[[58, [0]], [60, [0]]]}}
 
+importScripts('util.js');
 var solver = function() {
-    var _add = function(a,b) {return a+b;};
-    var sum = function(seq) {return seq.reduce(_add, 0);};
-
-    var discard = function(arr, x) {
-        var arr_ind = arr.indexOf(x);
-        if (arr_ind !== -1) {arr.splice(arr_ind, 1);}
-        return arr_ind !== -1;
-    };
 
     // var assert = console.assert;
     var assert = function(x) {if (!x) {undefined.x;};};
@@ -53,13 +46,15 @@ var solver = function() {
     var intersectForbidden = function(vals, forbidden) {
         assert(vals.length > 0);
         var forbids = vals.map(function(i) {return forbidden[i];});
+        forbids.sort(function(a,b){return a.length - b.length;});
+
         var cur = forbids[0];
         for (var i=1; i<forbids.length; ++i) {
-            cur = cur.filter(function(x) {return forbids[i].indexOf(x) !== -1;});
+            // cur = cur.filter(function(x) {return forbids[i].indexOf(x) !== -1;});
+            cur = cur.filter(function(x) {return hasB(forbids[i], x);});
         }
         return cur;
     };
-
 
     var CellNode = function(ind, key_data) {
         this.ind = ind;
@@ -99,7 +94,8 @@ var solver = function() {
         this.inqueue = false;
     };
     RevCellNode.prototype.update = function(puz) {
-        this.choices = this.choices.filter(function(p) {return puz.gaps[hWord(p)].vals.indexOf(lWord(p)) !== -1;});
+        // this.choices = this.choices.filter(function(p) {return puz.gaps[hWord(p)].vals.indexOf(lWord(p)) !== -1;});
+        this.choices = this.choices.filter(function(p) {return hasB(puz.gaps[hWord(p)].vals, lWord(p));});
         if (this.choices.length === 0) {
             puz.pruneCell(this.cpair);
         }
@@ -186,7 +182,8 @@ var solver = function() {
         for(var i=0; i<cinds.length; ++i) {
             var cpair = cinds[i];
             var cnode = this.cells[hWord(cpair)];
-            if (cnode.vals.indexOf(lWord(cpair)) === -1) {continue;}
+            // if (cnode.vals.indexOf(lWord(cpair)) === -1) {continue;}
+            if (!hasB(cnode.vals, lWord(cpair))) {continue;}
 
             revnodes.push(new RevCellNode(['r', cnode.key_data], cpair^1, lists['r'][cpair]));
             revnodes.push(new RevCellNode(['c', cnode.key_data], cpair^1, lists['c'][cpair]));
@@ -215,6 +212,7 @@ var solver = function() {
                 grid_row[p].forbidden[1].push(makePair(gnode.ind, 0));
                 forbid.push(makePair(grid_row[p].ind, 1));
             }
+
             gnode.vals.push(0);
             gnode.forbidden.push(forbid);
             gnode.adj_forbidden.push([]);
@@ -337,6 +335,18 @@ var solver = function() {
             var grid_row = cells_colview.slice(i*R, i*R+R);
             processRow(gaps, grid_row, 'c', i, cols[i]);
         }
+
+        //make sure everything is sorted so binary search is possible
+        for(var i=0; i<cells.length; i++) {
+            var node = cells[i];
+            for (var i2=0; i2<node.forbidden.length; ++i2) {sort(node.forbidden[i2]);}
+        }
+        for(var i=0; i<gaps.length; i++) {
+            var node = gaps[i];
+            for (var i2=0; i2<node.forbidden.length; ++i2) {sort(node.forbidden[i2]);}
+            for (var i2=0; i2<node.adj_forbidden.length; ++i2) {sort(node.adj_forbidden[i2]);}
+        }
+
 
         var puz = new Puzzle(R, C, cells, gaps);
         if (grid !== null){

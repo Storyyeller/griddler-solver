@@ -17,7 +17,7 @@ function writeLines(s) {
     for(var i=0; i<lines.length; ++i) {writeText(lines[i]);}
 };
 
-
+writeText(puzzles.length + " " + puzzles[puzzles.length-1][0]);
 
 var t0all = window.performance.now();
 var solved = 0;
@@ -42,6 +42,7 @@ for(var i=0; i<puzzles.length; ++i){
     var puzzle_raw = puzzles[i];
     var puzzle = {rows:puzzle_raw[1], cols:puzzle_raw[2], grid:null};
     var cb = handleDone(puzzle_raw[0], window.performance.now());
+    puzzle.name = puzzle_raw[0];
 
     var workerTask = new WorkerTask('js/solver/solver.js', cb, puzzle);
     pool.addWorkerTask(workerTask);

@@ -49,6 +49,7 @@ function WorkerThread(parentPool) {
         this.workerTask = workerTask;
         // create a new web worker
         if (this.workerTask.script != null) {
+            writeText("beginning task " + workerTask.startMessage.name);
             var worker = new Worker(workerTask.script);
             worker.addEventListener('message', dummyCallback, false);
             worker.postMessage(workerTask.startMessage);
