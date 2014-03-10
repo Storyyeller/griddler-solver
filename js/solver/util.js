@@ -15,27 +15,26 @@ var sort = function(arr) {
     return arr;
 };
 
-// http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
-function hasB(arr, searchElement) {
+// adapted from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
+function findB(arr, searchElement) {
   var minIndex = 0;
   var maxIndex = arr.length - 1;
-  var currentIndex;
-  var currentElement;
 
   while (minIndex <= maxIndex) {
-      currentIndex = (minIndex + maxIndex) / 2 | 0;
-      currentElement = arr[currentIndex];
+      var curIndex = (minIndex + maxIndex) / 2 | 0;
 
-      if (currentElement < searchElement) {
-          minIndex = currentIndex + 1;
+      if (arr[curIndex] < searchElement) {
+          minIndex = curIndex + 1;
       }
-      else if (currentElement > searchElement) {
-          maxIndex = currentIndex - 1;
+      else if (arr[curIndex] > searchElement) {
+          maxIndex = curIndex - 1;
       }
       else {
-          return true;
+          return curIndex;
       }
   }
 
-  return false;
+  return -1;
 }
+
+function hasB(arr, searchElement) {return findB(arr, searchElement) !== -1;}

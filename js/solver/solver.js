@@ -50,7 +50,6 @@ var solver = function() {
 
         var cur = forbids[0];
         for (var i=1; i<forbids.length; ++i) {
-            // cur = cur.filter(function(x) {return forbids[i].indexOf(x) !== -1;});
             cur = cur.filter(function(x) {return hasB(forbids[i], x);});
         }
         return cur;
@@ -68,7 +67,6 @@ var solver = function() {
         // if (this.vals.length === 0) {postMessage(this.key_data + " ncs " + this.vals);}
         intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneGap, puz);
     };
-
 
     var GapNode = function(ind, key_data) {
         this.ind = ind;
@@ -94,10 +92,16 @@ var solver = function() {
         this.inqueue = false;
     };
     RevCellNode.prototype.update = function(puz) {
-        // this.choices = this.choices.filter(function(p) {return puz.gaps[hWord(p)].vals.indexOf(lWord(p)) !== -1;});
         this.choices = this.choices.filter(function(p) {return hasB(puz.gaps[hWord(p)].vals, lWord(p));});
         if (this.choices.length === 0) {
             puz.pruneCell(this.cpair);
+        }
+        else {
+            //check if there's any point in keeping this node alive
+            var node_ind = hWord(this.cpair), val = lWord(this.cpair);
+            if (puz.cells[node_ind].length > 1 && hasB(puz.cells[node_ind], val)) {
+                puz.addWakeup(this.choices[0], this);
+            }
         }
     };
 
@@ -108,6 +112,7 @@ var solver = function() {
         this.gapQ = new IntrusiveQueue(gaps);
         this.revQ = new IntrusiveQueue();
 
+        this.wakeup_dict = {}; // defaultdict {pair -> node list}
         this.newcell_prunes = [];
     };
     Puzzle.prototype.pruneCell = function(pair) {
@@ -125,7 +130,16 @@ var solver = function() {
 
         if (discard(node.vals, val)) {
             this.gapQ.push(node);
+
+            if (pair in this.wakeup_dict) {
+                this.wakeup_dict[pair].forEach(this.revQ.push, this.revQ);
+                delete this.wakeup_dict[pair];
+            }
         }
+    };
+    Puzzle.prototype.addWakeup = function(pair, rnode) {
+        this.wakeup_dict[pair] = this.wakeup_dict[pair] || [];
+        this.wakeup_dict[pair].push(rnode);
     };
     Puzzle.prototype.checkYield = function(msg_type, callback) {
         if (this.newcell_prunes.length > 0) {
@@ -182,7 +196,6 @@ var solver = function() {
         for(var i=0; i<cinds.length; ++i) {
             var cpair = cinds[i];
             var cnode = this.cells[hWord(cpair)];
-            // if (cnode.vals.indexOf(lWord(cpair)) === -1) {continue;}
             if (!hasB(cnode.vals, lWord(cpair))) {continue;}
 
             revnodes.push(new RevCellNode(['r', cnode.key_data], cpair^1, lists['r'][cpair]));
