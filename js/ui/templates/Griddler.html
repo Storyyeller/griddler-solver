@@ -1,0 +1,66 @@
+<div style="display:table;">
+    <div style="display:table-row;">
+
+        <div style="display:table-cell;">
+        </div>
+
+        <div style="display:table-cell;">
+            <div style="display:table;">
+                <% for (var r = 0; r < maxColHints; ++r) { %>
+                    <div style="display: table-row;">
+                        <% for (var c = 0; c < puzzle.cols.length; ++c) {
+                            var entryIndex = maxColHints - r - 1; %>
+                            <div class="GriddlerSquare GriddlerHintSquare" style="display: table-cell;">
+                                <% if (entryIndex < puzzle.cols[c].length) { %>
+                                    <%= puzzle.cols[c][entryIndex] %>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display:table-row;">
+
+        <div style="display:table-cell;">
+
+            <div style="display: table;">
+                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
+                    <div style="display: table-row;">
+                        <% for (var c = maxRowHints; c >= 1; --c) { %>
+                            <div class="GriddlerSquare GriddlerHintSquare" style="display:table-cell;">
+                                <%
+                                    var index = puzzle.rows[r].length - c;
+                                    if (index >= 0) { %>
+                                        <%= puzzle.rows[r][index] %>
+                                    <% }
+                                %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+
+        <div style="display:table-cell;">
+
+            <div class="inPlaySquaresContainer" style="display:table;">
+                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
+                    <div style="display:table-row;">
+                        <% for (var c = 0; c < puzzle.cols.length; ++c) { %>
+                            <div style="display:table-cell;" class="GriddlerSquare GriddlerUnknownSquare">
+
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+
+    </div>
+</div>

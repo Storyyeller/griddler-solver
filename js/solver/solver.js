@@ -1,15 +1,5 @@
 "use strict";
 
-//usage
-// var worker = new Worker('solver.js');
-// worker.addEventListener('message', function(e) {
-//   console.log('Worker said: ', e.data);
-// }, false);
-// worker.addEventListener('error', function(e) {
-//   console.log('Worker error: ', e.lineno, ' ', e.message);
-// }, false);
-// worker.postMessage(puzzle);
-
 // Public API
 // Input:
 // puzzle = {rows, cols, grid}
@@ -20,10 +10,12 @@
 // There is currently no error handling, so the puzzle must be solveable
 
 // Output:
-// steps of the form {type, newvals}
+// message of form {type, data} with type = "step", "done", or "error"
+// step data of the form {type, newvals}
 // type a string describing the logic type
 // newvals is array of [square, [vals]] pairs with white = 0 and black = 1
-// For example, to show that square 58 and 60 are known to be white, it would send newvals:[[58, [0]], [60, [0]]]
+// For example, to show that square 58 and 60 are known to be white, it would send
+// {type:"step", data:{type:"line logic", newvals:[[58, [0]], [60, [0]]]}}
 
 var solver = function() {
     var _add = function(a,b) {return a+b;};
@@ -129,7 +121,6 @@ var solver = function() {
         if (discard(node.vals, val)) {
             this.cellQ.push(node);
             this.newcell_prunes.push([node.ind, node.vals]);
-            // postMessage("\tpruned " + node.key_data + " " + val);
         }
     };
     Puzzle.prototype.pruneGap = function(pair) {
@@ -137,16 +128,14 @@ var solver = function() {
         var node = this.gaps[node_ind];
         if (discard(node.vals, val)) {
             this.gapQ.push(node);
-            // postMessage("\tpruned " + node.key_data + " " + node.val_data[val]);
         }
     };
     Puzzle.prototype.checkYield = function(msg_type, callback) {
         if (this.newcell_prunes.length > 0) {
-            var msg = {type:msg_type, newvals:this.newcell_prunes};
+            var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
             callback(msg);
             this.newcell_prunes = [];
         }
-
     }
     Puzzle.prototype.simplify = function(callback) {
         while(this.cellQ.nonempty() || this.gapQ.nonempty() || this.revQ.nonempty()){
@@ -208,6 +197,9 @@ var solver = function() {
         this.simplify(callback);
         this.createReverseNodes();
         this.simplify(callback);
+
+        var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
+        callback({type:'done', data:{solved:solved}});
     };
 
     var processRowSingle = function(gaps, grid_row, tc, r, sizes) {
@@ -324,12 +316,6 @@ var solver = function() {
         assert(R <= 255 && C <= 255);
         assert(grid === null || grid.length === R*C);
 
-        if (grid === null) { //fill with 3s
-            grid = new Array(R*C);
-            var i = grid.length;
-            while(--i >= 0) {grid[i] = 3;}
-        }
-
         var cells = new Array(R*C), cells_colview = new Array(R*C);
         for(var i=0; i<R*C; ++i) {
             var row = i/C|0, col = i%C;
@@ -351,39 +337,21 @@ var solver = function() {
         }
 
         var puz = new Puzzle(R, C, cells, gaps);
-        for(var i=0; i<R*C; ++i){
-            if (grid[i] & 1 === 0) {puz.pruneCell(makePair(i, 0));}
-            if (grid[i] & 2 === 0) {puz.pruneCell(makePair(i, 1));}
+        if (grid !== null){
+            for(var i=0; i<R*C; ++i){
+                if (grid[i] & 1 === 0) {puz.pruneCell(makePair(i, 0));}
+                if (grid[i] & 2 === 0) {puz.pruneCell(makePair(i, 1));}
+            }
         }
         return puz;
     };
 
-    var printSolution = function(puz) {
-        var R=puz.R, C=puz.C, cells=puz.cells;
-        var chars = ['!','.','X','?'];
-
-        var lines = [];
-        for(var r=0; r<R; ++r){
-            var line = [];
-            for(var c=0; c<C; ++c){
-                var node = cells[r*C + c];
-                var val = node.vals.reduce(function(a,i) {return a+(1<<i);}, 0);
-                line.push(chars[val]);
-            }
-            lines.push(line.join(""));
-        }
-        return "\n" + lines.join("\n");
-    };
-
     return {
-        createPuzzle:createPuzzle,
-        printSolution:printSolution
+        createPuzzle:createPuzzle
     };
 }();
 
 onmessage = function (oEvent) {
     var puz = solver.createPuzzle(oEvent.data);
     puz.solve(postMessage);
-    // var res = solver.printSolution(puz);
-    // postMessage(res);
 };
