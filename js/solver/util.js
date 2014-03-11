@@ -3,20 +3,16 @@
 var _add = function(a,b) {return a+b;};
 var sum = function(seq) {return seq.reduce(_add, 0);};
 
-var discard = function(arr, x) {
-    var arr_ind = arr.indexOf(x);
-    if (arr_ind !== -1) {arr.splice(arr_ind, 1);}
-    return arr_ind !== -1;
-};
-
 //Warning, sorts in place!
 var sort = function(arr) {
     arr.sort(function(a,b) {return a-b;});
     return arr;
 };
 
-// adapted from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
-function findB(arr, searchElement) {
+
+var findL = function(arr, searchElement) {return arr.indexOf(searchElement);}
+var findB = function(arr, searchElement) {
+  // adapted from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
   var minIndex = 0;
   var maxIndex = arr.length - 1;
 
@@ -35,6 +31,16 @@ function findB(arr, searchElement) {
   }
 
   return -1;
-}
+};
 
-function hasB(arr, searchElement) {return findB(arr, searchElement) !== -1;}
+var hasL = function(arr, searchElement) {return findL(arr, searchElement) !== -1;};
+var hasB = function(arr, searchElement) {return findB(arr, searchElement) !== -1;};
+
+var _discard = function(arr, arr_ind) {
+    if (arr_ind !== -1) {arr.splice(arr_ind, 1);}
+    return arr_ind !== -1;
+};
+
+var discardL = function(arr, x) {return _discard(arr, findL(arr, x));};
+var discardB = function(arr, x) {return _discard(arr, findB(arr, x));};
+

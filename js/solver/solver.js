@@ -99,7 +99,7 @@ var solver = function() {
         else {
             //check if there's any point in keeping this node alive
             var node_ind = hWord(this.cpair), val = lWord(this.cpair);
-            if (puz.cells[node_ind].length > 1 && hasB(puz.cells[node_ind], val)) {
+            if (puz.cells[node_ind].length > 1 && hasL(puz.cells[node_ind], val)) {
                 puz.addWakeup(this.choices[0], this);
             }
         }
@@ -119,7 +119,8 @@ var solver = function() {
         var node_ind = hWord(pair), val = lWord(pair);
         var node = this.cells[node_ind];
 
-        if (discard(node.vals, val)) {
+        //cells assumed to have few vals so use linear rather than binary search
+        if (discardL(node.vals, val)) {
             this.cellQ.push(node);
             this.newcell_prunes.push([node.ind, node.vals]);
         }
@@ -128,7 +129,7 @@ var solver = function() {
         var node_ind = hWord(pair), val = lWord(pair);
         var node = this.gaps[node_ind];
 
-        if (discard(node.vals, val)) {
+        if (discardB(node.vals, val)) {
             this.gapQ.push(node);
 
             if (pair in this.wakeup_dict) {
@@ -196,7 +197,7 @@ var solver = function() {
         for(var i=0; i<cinds.length; ++i) {
             var cpair = cinds[i];
             var cnode = this.cells[hWord(cpair)];
-            if (!hasB(cnode.vals, lWord(cpair))) {continue;}
+            if (!hasL(cnode.vals, lWord(cpair))) {continue;}
 
             revnodes.push(new RevCellNode(['r', cnode.key_data], cpair^1, lists['r'][cpair]));
             revnodes.push(new RevCellNode(['c', cnode.key_data], cpair^1, lists['c'][cpair]));
