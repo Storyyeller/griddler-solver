@@ -1,0 +1,13 @@
+<p><strong>Open</strong></p>
+
+<p>Choose a file on your computer: </p><input id="fileChooser" type="file" />
+<p></p>
+<hr>
+<p>Download a puzzle from the Internet:</p>
+<select id="urlSelect">
+    <% for (var i = 0; i < websites.length; ++i) { %>
+        <option value="<%= websites[i] %>"><%= websites[i] %></option>
+    <% } %>
+</select>
+<input id="puzzleId" type="text" placeholder="Puzzle ID" />
+<button id="scrapeButton">Go</button>
