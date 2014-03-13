@@ -80,7 +80,7 @@ CellPairNode.prototype.update = function(epuz, puz) {
     }
 };
 
-var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_rev) {
+var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_rev, callback) {
     this.node1 = node1;
     this.node2 = node2;
     this.matches = {}; //val1 -> compatible val2. May have garbage in entries not corresponding to valid val1
@@ -91,7 +91,7 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     //initialize this.matches (and add appropriate listeners)
     var this_ = this;
     //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
-    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
+    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1, callback);});
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var needed1 = this.node1.needed[val1];
@@ -119,7 +119,7 @@ GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
 GapPairNode.prototype.isMatch = function(val1, val2) {
     return this.getCPairsNeeded(val1, val2).every(function (info) {return info[0].isValid(info[1]);});
 };
-GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
+GapPairNode.prototype.findNewMatch = function(epuz, puz, val1, callback) {
     if (!hasB(this.node1.vals, val1)) {return;}
 
     var this_ = this;
@@ -136,9 +136,10 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
         });
     } else {
         puz.pruneGap(makePair(this.node1.ind, val1));
+        puz.simplify(callback);
     }
 };
-GapPairNode.prototype.update = function(epuz, puz) {
+GapPairNode.prototype.update = function(epuz, puz, callback) {
     var n1vals = this.node1.vals;
     for(var i1=0; i1<n1vals.length; i1++){
         var val1 = n1vals[i1];
@@ -146,7 +147,7 @@ GapPairNode.prototype.update = function(epuz, puz) {
 
         if (puz.checkGap(makePair(this.node2.ind, val2)) && this.isMatch(val1, val2)) {continue;}
         //old val2 match no longer valid - try to find a new one
-        this.findNewMatch(epuz, puz, val1);
+        this.findNewMatch(epuz, puz, val1, callback);
     }
 };
 
@@ -167,7 +168,7 @@ EdgePuzzle.prototype.addGapPairWakeup = function(pair, gpnode) {
     this.wakeup_dict_gp[pair].push(gpnode);
 };
 EdgePuzzle.prototype.simplify = function(callback) {
-    this.puz.simplify(); //we may have pruned things during creation
+    // this.puz.simplify(); //we may have pruned things during creation
 
     while(this.cellpQ.nonempty() || this.gappQ.nonempty()){
         if (this.cellpQ.nonempty()) {
@@ -193,7 +194,7 @@ EdgePuzzle.prototype.simplify = function(callback) {
         this.puz.newcell_prunes = [];
     }
 };
-EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
+EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps, callback) {
     var puz=this.puz, C=puz.C, R=puz.R, cells=puz.cells, gaps=puz.gaps;
     var r2 = r+1;
 
@@ -225,12 +226,12 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
     row_gaps[r].forEach(function(node1) {
         row_gaps[r2].forEach(function(node2) {
             //constructor automatically adds itself and may prune values
-            new GapPairNode(epuz, puz, node1, node2, cellnode_d, false);
-            new GapPairNode(epuz, puz, node2, node1, cellnode_d, true);
+            new GapPairNode(epuz, puz, node1, node2, cellnode_d, false, callback);
+            new GapPairNode(epuz, puz, node2, node1, cellnode_d, true, callback);
         });
     });
 };
-EdgePuzzle.prototype.createEdgeNodes = function() {
+EdgePuzzle.prototype.createEdgeNodes = function(callback) {
     var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
     assert(!this.cellpQ.nonempty() && this.gappQ.nonempty());
 
@@ -252,8 +253,8 @@ EdgePuzzle.prototype.createEdgeNodes = function() {
         (gnode.iscol ? col_gaps : row_gaps)[gnode.roworcolnum].push(gnode);
     });
 
-    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps);}
-    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps);}
+    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps, callback);}
+    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps, callback);}
 };
 EdgePuzzle.prototype.solve = function(callback, t0) {
     var puz=this.puz, cells=puz.cells;
