@@ -138,7 +138,7 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
         epuz.addGapPairWakeup(makePair(this.node2.ind, newv2), this);
         // add self as listener to new cpairs. Don't bother trying to remove self from old ones
         this.getCPairsNeeded(val1, newv2).forEach(function (info) {
-            info[0].listeners[info[1]].push(this);
+            info[0].listeners[info[1]].push(this_);
         });
     } else {
         puz.pruneGap(makePair(this.node1.ind, val1));
@@ -160,7 +160,6 @@ GapPairNode.prototype.update = function(epuz, puz) {
 
 var EdgePuzzle = function(puz) {
     this.puz = puz;
-
     this.cellpQ = new IntrusiveQueue();
     this.gappQ = new IntrusiveQueue();
     this.wakeup_dict_cp = {};
@@ -449,8 +448,13 @@ var createPuzzle = function(data, callback) {
 };
 
 self.onmessage = function (oEvent) {
-    var t0 = Date.now();
-    var puz = createPuzzle(oEvent.data, postMessage);
-    puz.solve(t0);
-    self.close();
+    // try {
+        var t0 = Date.now();
+        var puz = createPuzzle(oEvent.data, postMessage);
+        puz.solve(t0);
+        self.close();
+    // }
+    // catch (e) {
+    //    console.log(e.stack);
+    // }
 };

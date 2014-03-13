@@ -34,7 +34,6 @@ var intersectForbidden = function(vals, forbidden) {
 
     var cur = forbids[0];
     for (var i=1; i<forbids.length; ++i) {
-        // cur = cur.filter(function(x) {return hasB(forbids[i], x);});
         cur = intersectSorted(cur, forbids[i]);
     }
     return cur;
