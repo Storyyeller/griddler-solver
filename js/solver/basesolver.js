@@ -144,7 +144,7 @@ Puzzle.prototype.addRNodeWakeup = function(pair, rnode) {
 Puzzle.prototype.checkYield = function(msg_type, forcemsg) {
     if (this.newcell_prunes.length > 0 || forcemsg === true) {
         var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
-        // var callback = this.callback; callback(msg); //can't use this.callback directly because Javascript is stupid
+        var callback = this.callback; callback(msg); //can't use this.callback directly because Javascript is stupid
         this.newcell_prunes = [];
     }
 }
