@@ -87,13 +87,19 @@
             var puzzle = this.model.get("puzzle");
             var currentStep = this.model.get("currentStep");
             var progressText, stepComment;
-            if (currentStep === -1) {
-                progressText = "Beginning";
-                stepComment = "";
+
+            if (!puzzle.solution_steps) {
+                progressText = "Initializing solver";
             } else {
                 progressText = "Step " + (currentStep + 1) + " / " + puzzle.solution_steps.length;
+            }
+
+            if (currentStep === -1) {
+                stepComment = "";
+            } else {
                 stepComment = puzzle.solution_steps[currentStep].type;
             }
+
             this.stepInfoContainer.find("#currentStep").text(progressText);
             this.stepInfoContainer.find("#stepComment").text(stepComment);
         },
