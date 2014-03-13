@@ -170,7 +170,7 @@ EdgePuzzle.prototype.addGapPairWakeup = function(pair, gpnode) {
 EdgePuzzle.prototype.simplify = function(callback) {
     // this.puz.simplify(); //we may have pruned things during creation
 
-    while(this.cellpQ.nonempty() || this.gappQ.nonempty()){
+    while(this.cellpQ.nonempty() || this.gappQ.nonempty() || this.puz.newgap_prunes.length > 0){
         if (this.cellpQ.nonempty()) {
             this.cellpQ.pop().update(this, this.puz);
         }
@@ -181,17 +181,18 @@ EdgePuzzle.prototype.simplify = function(callback) {
 
         this.puz.simplify(callback); //TODO make callback print edge logic
         //wake up our nodes if anything was pruned by the basic solver
-        this.puz.newcell_prunes.forEach(function(pair) {
-            if (pair in this.wakeup_dict_cp) {
-                this.wakeup_dict_cp[pair].forEach(this.cellpQ.push, this.cellpQ);
-                delete this.wakeup_dict_cp[pair];
+        var this_ = this;
+        this.puz.newgap_prunes.forEach(function(pair) {
+            if (pair in this_.wakeup_dict_cp) {
+                this_.wakeup_dict_cp[pair].forEach(this_.cellpQ.push, this_.cellpQ);
+                delete this_.wakeup_dict_cp[pair];
             }
-            if (pair in this.wakeup_dict_gp) {
-                this.wakeup_dict_gp[pair].forEach(this.gappQ.push, this.gappQ);
-                delete this.wakeup_dict_gp[pair];
+            if (pair in this_.wakeup_dict_gp) {
+                this_.wakeup_dict_gp[pair].forEach(this_.gappQ.push, this_.gappQ);
+                delete this_.wakeup_dict_gp[pair];
             }
         });
-        this.puz.newcell_prunes = [];
+        this.puz.newgap_prunes = [];
     }
 };
 EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps, callback) {
@@ -234,6 +235,7 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps, call
 EdgePuzzle.prototype.createEdgeNodes = function(callback) {
     var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
     assert(!this.cellpQ.nonempty() && this.gappQ.nonempty());
+    this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
 
     var rnode_lookup = {false:[], true:[]}; // iscol -> cell_ind -> cell_val -> corresponding rnode
     var nulls = []; for(var i=0; i<numColors; i++) {nulls.push(null);}
