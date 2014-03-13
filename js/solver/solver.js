@@ -97,6 +97,7 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     var this_ = this;
     //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
     node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
+    puz.simplifyWithMessage('edge logic');
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var needed1 = this.node1.needed[val1];
@@ -141,7 +142,6 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
         });
     } else {
         puz.pruneGap(makePair(this.node1.ind, val1));
-        puz.simplify();
     }
 };
 GapPairNode.prototype.update = function(epuz, puz) {
@@ -186,7 +186,7 @@ EdgePuzzle.prototype.simplify = function() {
             this.gappQ.pop().update(this, this.puz);
         }
 
-        this.puz.simplify(); //TODO make callback print edge logic
+        this.puz.simplifyWithMessage('edge logic');
         //wake up our nodes if anything was pruned by the basic solver
         var this_ = this;
         this.puz.newgap_prunes.forEach(function(pair) {

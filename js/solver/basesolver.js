@@ -162,9 +162,17 @@ Puzzle.prototype.simplify = function() {
         if (this.revQ.nonempty()) {
             this.revQ.pop().update(this);
             this.checkYield('reverse line logic', false);
-        }
-        // postMessage(printSolution(this));
+        };
     }
+};
+Puzzle.prototype.simplifyWithMessage = function(msg_type) {
+    //Called by edge solver so we can dispaly edge logic steps
+    var force = this.cellQ.nonempty() || this.gapQ.nonempty();
+    while(this.gapQ.nonempty()) {
+        this.gapQ.pop().update(this);
+    }
+    this.checkYield(msg_type, force);
+    this.simplify();
 };
 Puzzle.prototype.createReverseNodes = function () {
     //create lists
