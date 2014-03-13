@@ -63,6 +63,7 @@ var GapNode = function(ind, iscol, roworcolnum, debuginfo) {
     this.adj_forbidden = [];
     this.inqueue = false;
     this.debug = debuginfo
+    this.val_data = []; //for debugging
 };
 GapNode.prototype.update = function(puz) {
     intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneCell, puz);

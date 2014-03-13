@@ -90,7 +90,8 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
 
     //initialize this.matches (and add appropriate listeners)
     var this_ = this;
-    node1.vals.forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
+    //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
+    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var needed1 = this.node1.needed[val1];
@@ -204,7 +205,7 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
 
     if (row_gaps[r].length === 0 || row_gaps[r2].length === 0) {return;} //stop immediately if there are no unknown gaps on this row pair
     var cellnode_d = {};
-    var rowempty = true;
+    var cpcount = 0;
 
     for(var c=0; c<climit; c++){
         var cell1 = cells[r*rmult + c*cmult];
@@ -214,11 +215,11 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
             var node = new CellPairNode(this, puz, cell1, cell2, rnodes[cell1.ind], rnodes[cell2.ind]);
             cellnode_d[cell1.ind] = node;
             cellnode_d[cell2.ind] = node;
-            rowempty = false;
+            cpcount += 1;
         }
     }
     //if there were no unknown adjacent cell pairs in this row, no point in continuing
-    if (rowempty === true) {return;}
+    if (cpcount === 0) {return;}
 
     var epuz = this;
     row_gaps[r].forEach(function(node1) {
@@ -258,7 +259,7 @@ EdgePuzzle.prototype.solve = function(callback, t0) {
     var puz=this.puz, cells=puz.cells;
 
     puz.solve(callback, t0);
-    this.createEdgeNodes();
+    this.createEdgeNodes(callback);
     this.simplify(callback);
 
     var solved = !cells.some(function(cell) {return cell.vals.length > 1;});
@@ -289,7 +290,7 @@ var processRowSingle = function(gaps, grid_row, tc, r, sizes) {
         gnode.forbidden.push(forbid);
         gnode.needed.push(needed);
         gnode.adj_forbidden.push([]);
-        // gnode.val_data.push([0,C]);
+        gnode.val_data.push([0,C]);
     } else if (k === 1) { //single mark
         var size = sizes[0];
 
@@ -315,7 +316,7 @@ var processRowSingle = function(gaps, grid_row, tc, r, sizes) {
             gnode.forbidden.push(forbid);
             gnode.needed.push(needed);
             gnode.adj_forbidden.push([]);
-            // gnode.val_data.push([0,s,s+size,C]);
+            gnode.val_data.push([0,s,s+size,C]);
             assert(gnode.vals.length === gnode.forbidden.length);
         }
         // postMessage(gnode.key_data + " vals " + JSON.stringify(gnode.val_data));
@@ -364,7 +365,7 @@ var processRow = function(gaps, grid_row, tc, r, sizes) {
                 gnode.vals.push(key_ind);
                 gnode.forbidden.push(forbid);
                 gnode.needed.push(needed);
-                // gnode.val_data.push([s,e]);
+                gnode.val_data.push([s,e]);
                 gnode.val_edges.push([s, e]);
                 gnode.adj_forbidden.push([]);
                 assert(gnode.vals.length === gnode.forbidden.length);

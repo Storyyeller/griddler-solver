@@ -1,7 +1,8 @@
 "use strict";
 
 var assert = function(x) {console.assert(x);};
-// var assert = function(x) {if (!x) {undefined.x;};};
+var print = function(x) {console.log(JSON.stringify(x));};
+
 var _add = function(a,b) {return a+b;};
 var sum = function(seq) {return seq.reduce(_add, 0);};
 
