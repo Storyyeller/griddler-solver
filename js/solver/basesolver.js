@@ -2,8 +2,6 @@
 
 
 importScripts('util.js');
-// var assert = console.assert;
-var assert = function(x) {if (!x) {undefined.x;};};
 var hWord = function(x) {return (x >>> 16) & 0xFFFF;};
 var lWord = function(x) {return x & 0xFFFF;};
 var makePair = function(x, y) {return (x << 16) | y;};
@@ -25,6 +23,10 @@ IntrusiveQueue.prototype.push = function(x) {
     }
 };
 
+var intersectSorted = function(s1, s2) {
+    return s1.filter(function(x) {return hasB(s2, x);});
+};
+
 var intersectForbidden = function(vals, forbidden) {
     assert(vals.length > 0);
     var forbids = vals.map(function(i) {return forbidden[i];});
@@ -32,63 +34,61 @@ var intersectForbidden = function(vals, forbidden) {
 
     var cur = forbids[0];
     for (var i=1; i<forbids.length; ++i) {
-        cur = cur.filter(function(x) {return hasB(forbids[i], x);});
+        // cur = cur.filter(function(x) {return hasB(forbids[i], x);});
+        cur = intersectSorted(cur, forbids[i]);
     }
     return cur;
 };
 
-var CellNode = function(ind, key_data) {
+var CellNode = function(ind) {
     this.ind = ind;
-    this.key_data = key_data;
     this.vals = [];
     this.forbidden = []; //val -> [pairs]
     this.inqueue = false;
 };
 CellNode.prototype.update = function(puz) {
-    // postMessage("Updating cell " + this.key_data);
-    // if (this.vals.length === 0) {postMessage(this.key_data + " ncs " + this.vals);}
     intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneGap, puz);
 };
 
-var GapNode = function(ind, key_data) {
+var GapNode = function(ind, iscol) {
     this.ind = ind;
-    this.key_data = key_data;
+    this.iscol = iscol;
     this.vals = [];
     this.forbidden = []; //val -> [pairs]
-    // this.val_data = []; //for debugging
+    this.needed = []; //val -> {cell:color} (which colors this choice forces)
+
     this.val_edges = [];
     this.adj_forbidden = [];
     this.inqueue = false;
 };
 GapNode.prototype.update = function(puz) {
-    // postMessage("Updating gap " + this.key_data);
-    // if (this.vals.length === 0) {postMessage(this.key_data + " ngs " + this.vals);}
     intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneCell, puz);
     intersectForbidden(this.vals, this.adj_forbidden).forEach(puz.pruneGap, puz);
 };
 
-var RevCellNode = function(key_data, cpair, choices) {
-    this.key_data = key_data;
+var RevCellNode = function(iscol, cpair, choices) {
+    this.iscol = iscol;
     this.cpair = cpair;
     this.choices = choices;
     this.inqueue = false;
 };
 RevCellNode.prototype.update = function(puz) {
-    this.choices = this.choices.filter(function(p) {return hasB(puz.gaps[hWord(p)].vals, lWord(p));});
+    this.choices = this.choices.filter(puz.checkGap, puz);
     if (this.choices.length === 0) {
         puz.pruneCell(this.cpair);
     }
     else {
         //check if there's any point in keeping this node alive
         var node_ind = hWord(this.cpair), val = lWord(this.cpair);
-        if (puz.cells[node_ind].length > 1 && hasL(puz.cells[node_ind], val)) {
-            puz.addWakeup(this.choices[0], this);
+        if (puz.cells[node_ind].length > 1 && puz.checkCell(this.cpair)) {
+            puz.addRNodeWakeup(this.choices[0], this);
         }
     }
 };
 
 var Puzzle = function(R, C, cells, gaps) {
     this.R = R; this.C = C; this.cells = cells; this.gaps = gaps;
+    this.numColors = 2;
 
     this.cellQ = new IntrusiveQueue(cells);
     this.gapQ = new IntrusiveQueue(gaps);
@@ -96,8 +96,17 @@ var Puzzle = function(R, C, cells, gaps) {
 
     this.wakeup_dict = {}; // defaultdict {pair -> node list}
     this.newgap_prunes = []; //used for the edge solver
+    this.revnodes = []; //keep track of revnodes for the edge solver
 
     this.newcell_prunes = []; //used for displaying steps
+};
+Puzzle.prototype.checkCell = function(pair) {
+    var node_ind = hWord(pair), val = lWord(pair);
+    return hasL(this.cells[node_ind].vals, val);
+};
+Puzzle.prototype.checkGap = function(pair) {
+    var node_ind = hWord(pair), val = lWord(pair);
+    return hasB(this.gaps[node_ind].vals, val);
 };
 Puzzle.prototype.pruneCell = function(pair) {
     var node_ind = hWord(pair), val = lWord(pair);
@@ -123,7 +132,7 @@ Puzzle.prototype.pruneGap = function(pair) {
         }
     }
 };
-Puzzle.prototype.addWakeup = function(pair, rnode) {
+Puzzle.prototype.addRNodeWakeup = function(pair, rnode) {
     this.wakeup_dict[pair] = this.wakeup_dict[pair] || [];
     this.wakeup_dict[pair].push(rnode);
 };
@@ -154,41 +163,44 @@ Puzzle.prototype.simplify = function(callback) {
 };
 Puzzle.prototype.createReverseNodes = function () {
     //create lists
-    var lists = {'r':[], 'c':[]};
+    var lists = {false:{}, true:{}};
     var cinds = [];
     for(var i=0; i<this.cells.length; ++i) {
-        for (var cv=0; cv<=1; ++cv) {
+        for (var cv=0; cv<=this.numColors; ++cv) {
             pair = makePair(i, cv);
-            lists['r'][pair] = [];
-            lists['c'][pair] = [];
+            lists[false][pair] = [];
+            lists[true][pair] = [];
             cinds.push(pair)
         }
     }
 
     for(var i=0; i<this.gaps.length; ++i) {
         var gnode = this.gaps[i];
-        var list = lists[gnode.key_data[0]];
+        var list = lists[gnode.iscol];
         for (var vi=0; vi<gnode.vals.length; ++vi) {
             var val = gnode.vals[vi];
-            var pair = makePair(i, val);
-            var forbid = gnode.forbidden[val];
-            for (var vi2=0; vi2<forbid.length; ++vi2) {
-                list[forbid[vi2]].push(pair);
+
+            var pair = makePair(gnode.ind, val);
+            var needed = gnode.needed[val];
+            for(var k in needed) {
+                var forcedpair = makePair(k, needed[k]);
+                list[forcedpair].push(pair);
             }
         }
     }
 
-    var revnodes = [];
+    var revnodes = this.revnodes;
     for(var i=0; i<cinds.length; ++i) {
         var cpair = cinds[i];
         var cnode = this.cells[hWord(cpair)];
         if (!hasL(cnode.vals, lWord(cpair))) {continue;}
 
-        revnodes.push(new RevCellNode(['r', cnode.key_data], cpair^1, lists['r'][cpair]));
-        revnodes.push(new RevCellNode(['c', cnode.key_data], cpair^1, lists['c'][cpair]));
+        sort(lists[false][cpair]);
+        sort(lists[true][cpair]);
+        revnodes.push(new RevCellNode(false, cpair, lists[false][cpair]));
+        revnodes.push(new RevCellNode(true, cpair, lists[true][cpair]));
     }
     this.revQ = new IntrusiveQueue(revnodes);
-    // postMessage(revnodes.length + " rnodes created");
 };
 Puzzle.prototype.solve = function(callback, t0) {
     this.simplify(callback);
