@@ -62,8 +62,13 @@ CellPairNode.prototype.getChoices = function(pair, puz) {
     return choices.filter(puz.checkGap, puz);
 };
 CellPairNode.prototype.update = function(epuz, puz) {
-    var watches = this.mywatches;
+    var cell1 = puz.cells[this.cell_ind1];
+    var cell2 = puz.cells[this.cell_ind2];
+    //If one of the cells is known, stop immediately. No point in waking up listeneres
+    //since they'll be worken up when the gap vals are pruned by the basic solver anyway
+    if (cell1.vals.length <= 1 || cell2.vals.length <= 1) {return;}
 
+    var watches = this.mywatches;
     for(var pair in watches) {
         assert(typeof watches[pair] === "number");
         if (puz.checkGap(watches[pair])) {continue;} //watch still valid
@@ -140,6 +145,8 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
     }
 };
 GapPairNode.prototype.update = function(epuz, puz) {
+    if (this.node1.vals.length <= 1) {return;}
+
     var n1vals = this.node1.vals;
     for(var i1=0; i1<n1vals.length; i1++){
         var val1 = n1vals[i1];
