@@ -90,9 +90,10 @@ RevCellNode.prototype.update = function(puz) {
     }
 };
 
-var Puzzle = function(R, C, cells, gaps) {
+var Puzzle = function(R, C, cells, gaps, callback) {
     this.R = R; this.C = C; this.cells = cells; this.gaps = gaps;
     this.numColors = 2;
+    this.callback = callback;
 
     this.cellQ = new IntrusiveQueue(cells);
     this.gapQ = new IntrusiveQueue(gaps);
@@ -140,14 +141,14 @@ Puzzle.prototype.addRNodeWakeup = function(pair, rnode) {
     this.wakeup_dict[pair] = this.wakeup_dict[pair] || [];
     this.wakeup_dict[pair].push(rnode);
 };
-Puzzle.prototype.checkYield = function(msg_type, callback) {
-    if (this.newcell_prunes.length > 0) {
-        // var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
-        // callback(msg);
+Puzzle.prototype.checkYield = function(msg_type, forcemsg) {
+    if (this.newcell_prunes.length > 0 || forcemsg === true) {
+        var msg = {type:'step', data:{type:msg_type, newvals:this.newcell_prunes}};
+        // var callback = this.callback; callback(msg); //can't use this.callback directly because Javascript is stupid
         this.newcell_prunes = [];
     }
 }
-Puzzle.prototype.simplify = function(callback) {
+Puzzle.prototype.simplify = function() {
     while(this.cellQ.nonempty() || this.gapQ.nonempty() || this.revQ.nonempty()){
         if (this.cellQ.nonempty()) {
             this.cellQ.pop().update(this);
@@ -155,12 +156,12 @@ Puzzle.prototype.simplify = function(callback) {
 
         if (this.gapQ.nonempty()) {
             this.gapQ.pop().update(this);
-            this.checkYield('line logic', callback);
+            this.checkYield('line logic', false);
         }
 
         if (this.revQ.nonempty()) {
             this.revQ.pop().update(this);
-            this.checkYield('reverse line logic', callback);
+            this.checkYield('reverse line logic', false);
         }
         // postMessage(printSolution(this));
     }
@@ -206,10 +207,10 @@ Puzzle.prototype.createReverseNodes = function () {
     }
     this.revQ = new IntrusiveQueue(revnodes);
 };
-Puzzle.prototype.solve = function(callback, t0) {
-    this.simplify(callback);
+Puzzle.prototype.solve = function() {
+    this.simplify();
     this.createReverseNodes();
-    this.simplify(callback);
+    this.simplify();
 
     // var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
     // var time = (Date.now() - t0)/1000;

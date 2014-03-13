@@ -80,7 +80,7 @@ CellPairNode.prototype.update = function(epuz, puz) {
     }
 };
 
-var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_rev, callback) {
+var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_rev) {
     this.node1 = node1;
     this.node2 = node2;
     this.matches = {}; //val1 -> compatible val2. May have garbage in entries not corresponding to valid val1
@@ -91,7 +91,7 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     //initialize this.matches (and add appropriate listeners)
     var this_ = this;
     //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
-    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1, callback);});
+    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var needed1 = this.node1.needed[val1];
@@ -119,7 +119,7 @@ GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
 GapPairNode.prototype.isMatch = function(val1, val2) {
     return this.getCPairsNeeded(val1, val2).every(function (info) {return info[0].isValid(info[1]);});
 };
-GapPairNode.prototype.findNewMatch = function(epuz, puz, val1, callback) {
+GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
     if (!hasB(this.node1.vals, val1)) {return;}
 
     var this_ = this;
@@ -136,10 +136,10 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1, callback) {
         });
     } else {
         puz.pruneGap(makePair(this.node1.ind, val1));
-        puz.simplify(callback);
+        puz.simplify();
     }
 };
-GapPairNode.prototype.update = function(epuz, puz, callback) {
+GapPairNode.prototype.update = function(epuz, puz) {
     var n1vals = this.node1.vals;
     for(var i1=0; i1<n1vals.length; i1++){
         var val1 = n1vals[i1];
@@ -147,7 +147,7 @@ GapPairNode.prototype.update = function(epuz, puz, callback) {
 
         if (puz.checkGap(makePair(this.node2.ind, val2)) && this.isMatch(val1, val2)) {continue;}
         //old val2 match no longer valid - try to find a new one
-        this.findNewMatch(epuz, puz, val1, callback);
+        this.findNewMatch(epuz, puz, val1);
     }
 };
 
@@ -167,7 +167,7 @@ EdgePuzzle.prototype.addGapPairWakeup = function(pair, gpnode) {
     this.wakeup_dict_gp[pair] = this.wakeup_dict_gp[pair] || [];
     this.wakeup_dict_gp[pair].push(gpnode);
 };
-EdgePuzzle.prototype.simplify = function(callback) {
+EdgePuzzle.prototype.simplify = function() {
     // this.puz.simplify(); //we may have pruned things during creation
 
     while(this.cellpQ.nonempty() || this.gappQ.nonempty() || this.puz.newgap_prunes.length > 0){
@@ -179,7 +179,7 @@ EdgePuzzle.prototype.simplify = function(callback) {
             this.gappQ.pop().update(this, this.puz);
         }
 
-        this.puz.simplify(callback); //TODO make callback print edge logic
+        this.puz.simplify(); //TODO make callback print edge logic
         //wake up our nodes if anything was pruned by the basic solver
         var this_ = this;
         this.puz.newgap_prunes.forEach(function(pair) {
@@ -195,7 +195,7 @@ EdgePuzzle.prototype.simplify = function(callback) {
         this.puz.newgap_prunes = [];
     }
 };
-EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps, callback) {
+EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
     var puz=this.puz, C=puz.C, R=puz.R, cells=puz.cells, gaps=puz.gaps;
     var r2 = r+1;
 
@@ -227,12 +227,12 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps, call
     row_gaps[r].forEach(function(node1) {
         row_gaps[r2].forEach(function(node2) {
             //constructor automatically adds itself and may prune values
-            new GapPairNode(epuz, puz, node1, node2, cellnode_d, false, callback);
-            new GapPairNode(epuz, puz, node2, node1, cellnode_d, true, callback);
+            new GapPairNode(epuz, puz, node1, node2, cellnode_d, false);
+            new GapPairNode(epuz, puz, node2, node1, cellnode_d, true);
         });
     });
 };
-EdgePuzzle.prototype.createEdgeNodes = function(callback) {
+EdgePuzzle.prototype.createEdgeNodes = function() {
     var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
     assert(!this.cellpQ.nonempty() && this.gappQ.nonempty());
     this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
@@ -255,19 +255,19 @@ EdgePuzzle.prototype.createEdgeNodes = function(callback) {
         (gnode.iscol ? col_gaps : row_gaps)[gnode.roworcolnum].push(gnode);
     });
 
-    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps, callback);}
-    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps, callback);}
+    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps);}
+    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps);}
 };
-EdgePuzzle.prototype.solve = function(callback, t0) {
+EdgePuzzle.prototype.solve = function(t0) {
     var puz=this.puz, cells=puz.cells;
 
-    puz.solve(callback, t0);
-    this.createEdgeNodes(callback);
-    this.simplify(callback);
+    puz.solve();
+    this.createEdgeNodes();
+    this.simplify();
 
     var solved = !cells.some(function(cell) {return cell.vals.length > 1;});
     var time = (Date.now() - t0)/1000;
-    callback({type:'done', data:{solved:solved, time:time}});
+    var callback = this.puz.callback; callback({type:'done', data:{solved:solved, time:time}});
 }
 
 
@@ -392,7 +392,7 @@ var processRow = function(gaps, grid_row, tc, r, sizes) {
     }
 };
 
-var createPuzzle = function(data) {
+var createPuzzle = function(data, callback) {
     var rows = data.rows, cols = data.cols, grid = data.grid;
     var R = rows.length, C = cols.length;
 
@@ -431,7 +431,7 @@ var createPuzzle = function(data) {
     }
 
 
-    var puz = new Puzzle(R, C, cells, gaps);
+    var puz = new Puzzle(R, C, cells, gaps, callback);
     if (grid !== null){
         for(var i=0; i<R*C; ++i){
             if (grid[i] & 1 === 0) {puz.pruneCell(makePair(i, 0));}
@@ -443,7 +443,7 @@ var createPuzzle = function(data) {
 
 self.onmessage = function (oEvent) {
     var t0 = Date.now();
-    var puz = createPuzzle(oEvent.data);
-    puz.solve(postMessage, t0);
+    var puz = createPuzzle(oEvent.data, postMessage);
+    puz.solve(t0);
     self.close();
 };
