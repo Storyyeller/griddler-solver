@@ -40,19 +40,21 @@ var intersectForbidden = function(vals, forbidden) {
     return cur;
 };
 
-var CellNode = function(ind) {
+var CellNode = function(ind, debuginfo) {
     this.ind = ind;
     this.vals = [];
     this.forbidden = []; //val -> [pairs]
     this.inqueue = false;
+    this.debug = debuginfo
 };
 CellNode.prototype.update = function(puz) {
     intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneGap, puz);
 };
 
-var GapNode = function(ind, iscol) {
+var GapNode = function(ind, iscol, roworcolnum, debuginfo) {
     this.ind = ind;
     this.iscol = iscol;
+    this.roworcolnum = roworcolnum; //for edge solver
     this.vals = [];
     this.forbidden = []; //val -> [pairs]
     this.needed = []; //val -> {cell:color} (which colors this choice forces)
@@ -60,6 +62,7 @@ var GapNode = function(ind, iscol) {
     this.val_edges = [];
     this.adj_forbidden = [];
     this.inqueue = false;
+    this.debug = debuginfo
 };
 GapNode.prototype.update = function(puz) {
     intersectForbidden(this.vals, this.forbidden).forEach(puz.pruneCell, puz);
@@ -207,7 +210,7 @@ Puzzle.prototype.solve = function(callback, t0) {
     this.createReverseNodes();
     this.simplify(callback);
 
-    var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
-    var time = (Date.now() - t0)/1000;
-    callback({type:'done', data:{solved:solved, time:time}});
+    // var solved = !this.cells.some(function(cell) {return cell.vals.length > 1;});
+    // var time = (Date.now() - t0)/1000;
+    // callback({type:'done', data:{solved:solved, time:time}});
 };

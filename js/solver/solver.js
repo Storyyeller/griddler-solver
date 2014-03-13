@@ -19,19 +19,47 @@
 
 importScripts('basesolver.js');
 
-var CellPairNode = function(cell1, cell2) {
+var unsplit = function(puz, pairs){
+    var results = [];
+    pairs.forEach(function(x){
+        results.push([puz.gaps[hWord(x)].debug, lWord(x)]);
+    });
+    return results;
+};
+
+var CellPairNode = function(epuz, puz, cell1, cell2, rnodes1, rnodes2) {
     this.cell_ind1 = cell1.ind;
     this.cell_ind2 = cell2.ind;
+    this.rnodes1 = rnodes1; //val1 -> rnode or null. may be shared but doesn't matter
+    this.rnodes2 = rnodes2; //val2 -> rnode or null
 
-    this.rnodes1 = []; //val1 -> rnode
-    this.rnodes2 = []; //val2 -> rnode
     this.mywatches = {}; // valpair -> watched gpair
     this.listeners = {}; // valpair -> list of nodes
-
     this.inqueue = false;
+
+    //initialize everything
+    for(var i1=0; i1<cell1.vals.length; i1++) {
+        for(var i2=0; i2<cell2.vals.length; i2++) {
+            var val1=cell1.vals[i1], val2=cell2.vals[i2];
+            var pair = makePair(val1, val2);
+            var choices = this.getChoices(pair, puz);
+
+            if (choices.length > 0) {
+                this.listeners[pair] = [];
+                this.mywatches[pair] = choices[0];
+                epuz.addCellPairWakeup(choices[0], this);
+            }
+        }
+    }
 };
 CellPairNode.prototype.isValid = function(vpair) {
     return vpair in this.mywatches;
+};
+CellPairNode.prototype.getChoices = function(pair, puz) {
+    var v1 = hWord(pair), v2 = lWord(pair);
+    var choices = intersectSorted(this.rnodes1[v1].choices, this.rnodes2[v2].choices);
+    //Make sure all choices are valid. If we watch an invalid pair, we'll never wake up
+    return choices.filter(puz.checkGap, puz);
 };
 CellPairNode.prototype.update = function(epuz, puz) {
     var watches = this.mywatches;
@@ -40,11 +68,7 @@ CellPairNode.prototype.update = function(epuz, puz) {
         assert(typeof watches[pair] === "number");
         if (puz.checkGap(watches[pair])) {continue;} //watch still valid
 
-        var v1 = hWord(pair), v2 = lWord(pair);
-        var choices = intersectSorted(this.rnodes1[v1].choices, this.rnodes1[v2].choices);
-        //Make sure all choices are valid. If we watch an invalid pair, we'll never wake up
-        choices = choices.filter(puz.checkGap, puz);
-
+        var choices = this.getChoices(pair, puz);
         if (choices.length > 0) {
             watches[pair] = choices[0];
             epuz.addCellPairWakeup(choices[0], this);
@@ -56,14 +80,17 @@ CellPairNode.prototype.update = function(epuz, puz) {
     }
 };
 
-var GapPairNode = function(node1, node2) {
+var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_rev) {
     this.node1 = node1;
     this.node2 = node2;
-    this.matches = []; //val1 -> compatible val2. Garbage in entries not corresponding to valid val1
-    this.cellpairs_dict = {}; //cell ind -> cellpairnode. global dict shared by all gappairs in row
-    this.cellpairs_rev = false; //whether we're the first or second node in each pair
-
+    this.matches = {}; //val1 -> compatible val2. May have garbage in entries not corresponding to valid val1
+    this.cellpairs_dict = cellpairs_dict; //cell ind -> cellpairnode. global dict shared by all gappairs in row
+    this.cellpairs_rev = cellpairs_rev; //whether we're the first or second node in each pair
     this.inqueue = false;
+
+    //initialize this.matches (and add appropriate listeners)
+    var this_ = this;
+    node1.vals.forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var needed1 = this.node1.needed[val1];
@@ -91,28 +118,34 @@ GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
 GapPairNode.prototype.isMatch = function(val1, val2) {
     return this.getCPairsNeeded(val1, val2).every(function (info) {return info[0].isValid(info[1]);});
 };
+GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
+    if (!hasB(this.node1.vals, val1)) {return;}
+
+    var this_ = this;
+    //array.find would be more efficient, but it's sadly not standard yet
+    var newvals = this.node2.vals.filter(function(x) {return this_.isMatch(val1, x)});
+
+    if (newvals.length > 0) {
+        var newv2 = newvals[0];
+        this.matches[val1] = newv2;
+        epuz.addGapPairWakeup(makePair(this.node2.ind, newv2), this);
+        // add self as listener to new cpairs. Don't bother trying to remove self from old ones
+        this.getCPairsNeeded(val1, newv2).forEach(function (info) {
+            info[0].listeners[info[1]].push(this);
+        });
+    } else {
+        puz.pruneGap(makePair(this.node1.ind, val1));
+    }
+};
 GapPairNode.prototype.update = function(epuz, puz) {
     var n1vals = this.node1.vals;
-    var ind2 = this.node2.ind;
-
     for(var i1=0; i1<n1vals.length; i1++){
         var val1 = n1vals[i1];
         var val2 = this.matches[val1];
 
-        if (puz.checkGap(makePair(ind2, val2)) && this.isMatch(val1, val2)) {continue;}
+        if (puz.checkGap(makePair(this.node2.ind, val2)) && this.isMatch(val1, val2)) {continue;}
         //old val2 match no longer valid - try to find a new one
-
-        var newv2 = this.node2.vals.find(function(x) {return this.isMatch(val1, x)});
-        if (newv2 !== undefined) {
-            this.matches[val1] = newv2;
-            epuz.addGapPairWakeup(makePair(ind2, newv2), this);
-            // add self as listener to new cpairs. Don't bother trying to remove self from old ones
-            this.getCPairsNeeded(val1, newv2).forEach(function (info) {
-                info[0].listeners[info[1]].push(this);
-            });
-        } else {
-            puz.pruneGap(makePair(this.node1.ind, val1));
-        }
+        this.findNewMatch(epuz, puz, val1);
     }
 };
 
@@ -133,6 +166,8 @@ EdgePuzzle.prototype.addGapPairWakeup = function(pair, gpnode) {
     this.wakeup_dict_gp[pair].push(gpnode);
 };
 EdgePuzzle.prototype.simplify = function(callback) {
+    this.puz.simplify(); //we may have pruned things during creation
+
     while(this.cellpQ.nonempty() || this.gappQ.nonempty()){
         if (this.cellpQ.nonempty()) {
             this.cellpQ.pop().update(this, this.puz);
@@ -157,25 +192,79 @@ EdgePuzzle.prototype.simplify = function(callback) {
         this.puz.newcell_prunes = [];
     }
 };
-EdgePuzzle.prototype.createSingleRow = function(r) {
+EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
     var puz=this.puz, C=puz.C, R=puz.R, cells=puz.cells, gaps=puz.gaps;
     var r2 = r+1;
 
-    for(var c=0; c<C; c++){
-        var cell1 = cells[r*C + c];
-        var cell2 = cells[r2*C + c];
-        if (cell1.vals.length > 1 && cell2.vals.length > 1) {
-        }
+    if (!iscol) {
+        var climit=C, rmult=C, cmult=1;
+    } else {
+        var climit=R, rmult=1, cmult=C;
     }
 
+    if (row_gaps[r].length === 0 || row_gaps[r2].length === 0) {return;} //stop immediately if there are no unknown gaps on this row pair
+    var cellnode_d = {};
+    var rowempty = true;
 
+    for(var c=0; c<climit; c++){
+        var cell1 = cells[r*rmult + c*cmult];
+        var cell2 = cells[r2*rmult + c*cmult];
+        if (cell1.vals.length > 1 && cell2.vals.length > 1) {
+            //node adds itself to our watches automatically in the constructor
+            var node = new CellPairNode(this, puz, cell1, cell2, rnodes[cell1.ind], rnodes[cell2.ind]);
+            cellnode_d[cell1.ind] = node;
+            cellnode_d[cell2.ind] = node;
+            rowempty = false;
+        }
+    }
+    //if there were no unknown adjacent cell pairs in this row, no point in continuing
+    if (rowempty === true) {return;}
+
+    var epuz = this;
+    row_gaps[r].forEach(function(node1) {
+        row_gaps[r2].forEach(function(node2) {
+            //constructor automatically adds itself and may prune values
+            new GapPairNode(epuz, puz, node1, node2, cellnode_d, false);
+            new GapPairNode(epuz, puz, node2, node1, cellnode_d, true);
+        });
+    });
 };
 EdgePuzzle.prototype.createEdgeNodes = function() {
+    var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
     assert(!this.cellpQ.nonempty() && this.gappQ.nonempty());
 
+    var rnode_lookup = {false:[], true:[]}; // iscol -> cell_ind -> cell_val -> corresponding rnode
+    var nulls = []; for(var i=0; i<numColors; i++) {nulls.push(null);}
 
+    for(var i=0; i<R*C; i++) {
+        //.concat() performs a shallow copy
+        rnode_lookup[false].push(nulls.concat()); rnode_lookup[true].push(nulls.concat());
+    }
+    puz.revnodes.forEach(function(rnode) {
+        rnode_lookup[rnode.iscol][hWord(rnode.cpair)][lWord(rnode.cpair)] = rnode;
+    });
 
+    var row_gaps = []; for(var i=0; i<R; i++) {row_gaps.push([]);}
+    var col_gaps = []; for(var i=0; i<C; i++) {col_gaps.push([]);}
+    puz.gaps.forEach(function(gnode) {
+        if (gnode.vals.length <= 1) {return;}
+        (gnode.iscol ? col_gaps : row_gaps)[gnode.roworcolnum].push(gnode);
+    });
+
+    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps);}
+    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps);}
 };
+EdgePuzzle.prototype.solve = function(callback, t0) {
+    var puz=this.puz, cells=puz.cells;
+
+    puz.solve(callback, t0);
+    this.createEdgeNodes();
+    this.simplify(callback);
+
+    var solved = !cells.some(function(cell) {return cell.vals.length > 1;});
+    var time = (Date.now() - t0)/1000;
+    callback({type:'done', data:{solved:solved, time:time}});
+}
 
 
 
@@ -184,7 +273,7 @@ EdgePuzzle.prototype.createEdgeNodes = function() {
 
 var processRowSingle = function(gaps, grid_row, tc, r, sizes) {
     var C = grid_row.length, k = sizes.length;
-    var gnode = new GapNode(gaps.length, tc==='c');
+    var gnode = new GapNode(gaps.length, tc==='c', r, [tc, r, 0]);
     gaps.push(gnode);
 
     if (k === 0) { //whole row empty
@@ -239,7 +328,7 @@ var processRow = function(gaps, grid_row, tc, r, sizes) {
 
     var gn_offset = gaps.length;
     for(var i=1; i < k; ++i) {
-        var gnode = new GapNode(gaps.length, tc==='c');
+        var gnode = new GapNode(gaps.length, tc==='c', r, [tc, r, i]);
         gaps.push(gnode);
 
         var smin = sum(sizes.slice(0,i)) + i-1;
@@ -310,7 +399,7 @@ var createPuzzle = function(data) {
     for(var i=0; i<R*C; ++i) {
         var row = i/C|0, col = i%C;
 
-        var node = cells[i] = new CellNode(i);
+        var node = cells[i] = new CellNode(i, [row, col]);
         cells_colview[col*R + row] = node;
         node.vals = [0, 1];
         node.forbidden = [[], []];
@@ -345,7 +434,7 @@ var createPuzzle = function(data) {
             if (grid[i] & 2 === 0) {puz.pruneCell(makePair(i, 1));}
         }
     }
-    return puz;
+    return new EdgePuzzle(puz);
 };
 
 self.onmessage = function (oEvent) {
