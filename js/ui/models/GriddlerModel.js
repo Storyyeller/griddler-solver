@@ -31,13 +31,19 @@
 
             var self = this;
             this.worker = new Worker("js/solver/solver.js");
+
+            //TODO: do something useful on this event
+            this.worker.addEventListener("error", function(evt) {
+                console.log("A solver error occurred!!!");
+            });
+
             this.worker.addEventListener("message", function(evt) {
                 if (evt.data.type === "done") {
-                    self._cleanupSolve();
+                    self._cleanupSolve(true);
                     self._insertSolutionIntoPuzzle();
                     self.set("solveState", "solveCompleted");
                 } else if (evt.data.type === "error") {
-                    self._cleanupSolve();
+                    self._cleanupSolve(true);
                     self.set("solveState", "solveFailed");
                 } else if (evt.data.type === "step") {
                     p.solution_steps.push(evt.data.data);
@@ -75,9 +81,14 @@
             p.solution = solutionArray;
         },
 
-        _cleanupSolve: function() {
+        _cleanupSolve: function(workerAlreadyTerminated) {
             if (this.worker) {
-                this.worker.terminate();
+                /* worker.terminate() SOMETIMES fails on Firefox if the worker has already been terminated.
+                 * By fails, I mean no error is reported, the call does nothing, and code STOPS EXECUTING.
+                 * Therefore, we have to check if the worker is already terminated before making the call. */
+                if (!workerAlreadyTerminated) {
+                    this.worker.terminate();
+                }
                 this.worker = null;
                 clearInterval(this.timer);
             }
@@ -85,7 +96,7 @@
 
         abortSolving: function() {
             if (this.worker) {
-                this._cleanupSolve();
+                this._cleanupSolve(false);
                 this.set("solveState", "solveAborted");
             }
         }
