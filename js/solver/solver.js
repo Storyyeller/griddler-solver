@@ -169,8 +169,11 @@ var EdgePuzzle = function(puz) {
     this.wakeup_dict_gp = {};
 
     //bounding rectangle that has not yet been assigned edge nodes
+    //half open range on indices that are first in the pair
     this.R1 = 0; this.R2 = puz.R-1;
     this.C1 = 0; this.C2 = puz.C-1;
+    this.rnode_lookup = null;
+    this.row_gaps = [], this.col_gaps = [];
 };
 EdgePuzzle.prototype.addCellPairWakeup = function(pair, cpnode) {
     this.wakeup_dict_cp[pair] = this.wakeup_dict_cp[pair] || [];
@@ -208,6 +211,29 @@ EdgePuzzle.prototype.simplify = function() {
         this.puz.newgap_prunes = [];
     }
 };
+EdgePuzzle.prototype.createLookups = function() {
+    var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
+    assert(!this.cellpQ.nonempty() && !this.gappQ.nonempty());
+
+    this.rnode_lookup = {false:[], true:[]}; // iscol -> cell_ind -> cell_val -> corresponding rnode
+    var rnode_lookup = this.rnode_lookup;
+    var row_gaps = this.row_gaps, col_gaps = this.col_gaps;
+
+    var nulls = []; for(var i=0; i<numColors; i++) {nulls.push(null);}
+    for(var i=0; i<R*C; i++) {
+        //.concat() performs a shallow copy
+        rnode_lookup[false].push(nulls.concat()); rnode_lookup[true].push(nulls.concat());
+    }
+    puz.revnodes.forEach(function(rnode) {
+        rnode_lookup[rnode.iscol][hWord(rnode.cpair)][lWord(rnode.cpair)] = rnode;
+    });
+
+    for(var i=0; i<R; i++) {row_gaps.push([]);}
+    for(var i=0; i<C; i++) {col_gaps.push([]);}
+    puz.gaps.forEach(function(gnode) {
+        (gnode.iscol ? col_gaps : row_gaps)[gnode.roworcolnum].push(gnode);
+    });
+};
 EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
     var puz=this.puz, C=puz.C, R=puz.R, cells=puz.cells, gaps=puz.gaps;
     var r2 = r+1;
@@ -218,7 +244,10 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
         var climit=R, rmult=1, cmult=C;
     }
 
-    if (row_gaps[r].length === 0 || row_gaps[r2].length === 0) {return;} //stop immediately if there are no unknown gaps on this row pair
+    var gaps1 = row_gaps[r].filter(function(gn) {return gn.vals.length > 1;});
+    var gaps2 = row_gaps[r2].filter(function(gn) {return gn.vals.length > 1;});
+    if (gaps1.length === 0 || gaps2.length === 0) {return;} //stop immediately if there are no unknown gaps on this row pair
+
     var cellnode_d = {};
     var cpcount = 0;
 
@@ -237,46 +266,44 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
     if (cpcount === 0) {return;}
 
     var epuz = this;
-    row_gaps[r].forEach(function(node1) {
-        row_gaps[r2].forEach(function(node2) {
+    gaps1.forEach(function(node1) {
+        gaps2.forEach(function(node2) {
             //constructor automatically adds itself and may prune values
             new GapPairNode(epuz, puz, node1, node2, cellnode_d, false);
             new GapPairNode(epuz, puz, node2, node1, cellnode_d, true);
         });
     });
 };
-EdgePuzzle.prototype.createEdgeNodes = function() {
-    var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
-    assert(!this.cellpQ.nonempty() && !this.gappQ.nonempty());
-    this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
-
-    var rnode_lookup = {false:[], true:[]}; // iscol -> cell_ind -> cell_val -> corresponding rnode
-    var nulls = []; for(var i=0; i<numColors; i++) {nulls.push(null);}
-
-    for(var i=0; i<R*C; i++) {
-        //.concat() performs a shallow copy
-        rnode_lookup[false].push(nulls.concat()); rnode_lookup[true].push(nulls.concat());
+EdgePuzzle.prototype.createNextEdge = function() {
+    //create edge constraints on the next rows in from the edges
+    if(this.R1 < this.R2) {
+        this.createSingleRow(this.R1, false, this.rnode_lookup[true], this.row_gaps);
+        this.R1++;
     }
-    puz.revnodes.forEach(function(rnode) {
-        rnode_lookup[rnode.iscol][hWord(rnode.cpair)][lWord(rnode.cpair)] = rnode;
-    });
-
-    var row_gaps = []; for(var i=0; i<R; i++) {row_gaps.push([]);}
-    var col_gaps = []; for(var i=0; i<C; i++) {col_gaps.push([]);}
-    puz.gaps.forEach(function(gnode) {
-        if (gnode.vals.length <= 1) {return;}
-        (gnode.iscol ? col_gaps : row_gaps)[gnode.roworcolnum].push(gnode);
-    });
-
-    for(var r=0; r<R-1; r++) {this.createSingleRow(r, false, rnode_lookup[true], row_gaps);}
-    for(var c=0; c<C-1; c++) {this.createSingleRow(c, true, rnode_lookup[false], col_gaps);}
+    if(this.R1 < this.R2) {
+        this.createSingleRow(this.R2-1, false, this.rnode_lookup[true], this.row_gaps);
+        this.R2--;
+    }
+    if(this.C1 < this.C2) {
+        this.createSingleRow(this.C1, true, this.rnode_lookup[false], this.col_gaps);
+        this.C1++;
+    }
+    if(this.C1 < this.C2) {
+        this.createSingleRow(this.C2-1, true, this.rnode_lookup[false], this.col_gaps);
+        this.C2--;
+    }
 };
 EdgePuzzle.prototype.solve = function(t0) {
     var puz=this.puz, cells=puz.cells;
 
     puz.solve();
-    this.createEdgeNodes();
-    this.simplify();
+    this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
+    this.createLookups();
+
+    while(this.R1 < this.R2 || this.C1 < this.C2) {
+        this.createNextEdge();
+        this.simplify();
+    }
 
     var solved = !cells.some(function(cell) {return cell.vals.length > 1;});
     var time = (Date.now() - t0)/1000;
