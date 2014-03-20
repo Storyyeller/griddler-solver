@@ -1,6 +1,7 @@
 "use strict";
 
-var assert = function(x) {console.assert(x);};
+// var assert = function(x) {console.assert(x);}; //Doesn't seem to work, at least in Chrome
+var assert = function(x) {if(!x) {undefined.x;}};
 var print = function(x) {console.log(JSON.stringify(x));};
 
 var _add = function(a,b) {return a+b;};
