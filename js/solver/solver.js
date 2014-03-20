@@ -69,7 +69,8 @@ CellPairNode.prototype.update = function(epuz, puz) {
     if (cell1.vals.length <= 1 || cell2.vals.length <= 1) {return;}
 
     var watches = this.mywatches;
-    for(var pair in watches) {
+    for(var pair_ in watches) {
+        var pair = parseInt(pair_);
         assert(typeof watches[pair] === "number");
         if (puz.checkGap(watches[pair])) {continue;} //watch still valid
 
@@ -110,7 +111,9 @@ GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
     var d = this.cellpairs_dict;
     var results = []
 
-    for(var cind1 in needed1) {
+    for(var cind1_ in needed1) {
+        var cind1 = parseInt(cind1_);
+
         if (!(cind1 in d)) {continue;}
         var cpnode = d[cind1];
         var cind2 = cpnode.cell_ind2;
@@ -164,6 +167,10 @@ var EdgePuzzle = function(puz) {
     this.gappQ = new IntrusiveQueue();
     this.wakeup_dict_cp = {};
     this.wakeup_dict_gp = {};
+
+    //bounding rectangle that has not yet been assigned edge nodes
+    this.R1 = 0; this.R2 = puz.R-1;
+    this.C1 = 0; this.C2 = puz.C-1;
 };
 EdgePuzzle.prototype.addCellPairWakeup = function(pair, cpnode) {
     this.wakeup_dict_cp[pair] = this.wakeup_dict_cp[pair] || [];
@@ -240,7 +247,7 @@ EdgePuzzle.prototype.createSingleRow = function(r, iscol, rnodes, row_gaps) {
 };
 EdgePuzzle.prototype.createEdgeNodes = function() {
     var puz=this.puz, C=puz.C, R=puz.R, numColors=puz.numColors;
-    assert(!this.cellpQ.nonempty() && this.gappQ.nonempty());
+    assert(!this.cellpQ.nonempty() && !this.gappQ.nonempty());
     this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
 
     var rnode_lookup = {false:[], true:[]}; // iscol -> cell_ind -> cell_val -> corresponding rnode
