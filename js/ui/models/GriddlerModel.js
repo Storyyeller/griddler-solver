@@ -30,7 +30,7 @@
             }
 
             var self = this;
-            this.worker = new Worker("js/solver/solver.js");
+            this.worker = new Worker("js/solver/main.js");
             this.worker.addEventListener("message", function(evt) {
                 if (evt.data.type === "done") {
                     self._cleanupSolve();
