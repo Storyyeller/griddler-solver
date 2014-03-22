@@ -113,24 +113,27 @@ GapPairNode.prototype.isMatch = function(val1, val2) {
 GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
     if (!hasB(this.node1.vals, val1)) {return;}
 
-    var this_ = this;
-    //array.find would be more efficient, but it's sadly not standard yet
-    var newvals = this.node2.vals.filter(function(x) {return this_.isMatch(val1, x)});
+    var vals2 = this.node2.vals;
+    for(var i=0; i<vals2.length; ++i) {
+        var newv2 = vals2[i];
+        if (this.isMatch(val1, newv2) {
+            this.matches[val1] = newv2;
+            epuz.addGapPairWakeup(makePair(this.node2.ind, newv2), this);
+            // add self as listener to new cpairs. Don't bother trying to remove self from old ones
+            var this_ = this;
+            this.getCPairsNeeded(val1, newv2).forEach(function (info) {
+                info[0].listeners[info[1]].push(this_);
+            });
 
-    if (newvals.length > 0) {
-        var newv2 = newvals[0];
-        this.matches[val1] = newv2;
-        epuz.addGapPairWakeup(makePair(this.node2.ind, newv2), this);
-        // add self as listener to new cpairs. Don't bother trying to remove self from old ones
-        this.getCPairsNeeded(val1, newv2).forEach(function (info) {
-            info[0].listeners[info[1]].push(this_);
-        });
-    } else {
-        puz.pruneGap(makePair(this.node1.ind, val1));
+            return;
+        }
     }
+    //if we reach this point, no matches found
+    puz.pruneGap(makePair(this.node1.ind, val1));
 };
 GapPairNode.prototype.update = function(epuz, puz) {
     if (this.node1.vals.length <= 1) {return;}
+    if (this.node2.vals.length <= 1) {return;}
 
     var n1vals = this.node1.vals;
     for(var i1=0; i1<n1vals.length; i1++){
