@@ -72,6 +72,7 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     this.node1 = node1;
     this.node2 = node2;
     this.matches = {}; //val1 -> compatible val2. May have garbage in entries not corresponding to valid val1
+    this.match_reqs = {}; //val1 -> [cind vpair] pairs
     this.cellpairs_dict = cellpairs_dict; //cell ind -> cellpairnode. global dict shared by all gappairs in row
     this.cellpairs_rev = cellpairs_rev; //whether we're the first or second node in each pair
     this.inqueue = false;
@@ -79,7 +80,8 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     //initialize this.matches (and add appropriate listeners)
     var this_ = this;
     //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
-    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1);});
+    //use 65536 as the excluded value since it is garuenteed to not be a valid value for node 2
+    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1, makePair(1,0));});
     puz.simplifyWithMessage('edge logic');
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
@@ -107,21 +109,25 @@ GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
 
     return results;
 };
-GapPairNode.prototype.isMatch = function(val1, val2) {
-    return this.getCPairsNeeded(val1, val2).every(function (info) {return info[0].isValid(info[1]);});
+GapPairNode.prototype.isMatch = function(cpairs) {
+    return cpairs.every(function (info) {return info[0].isValid(info[1]);});
 };
-GapPairNode.prototype.findNewMatch = function(epuz, puz, val1) {
+GapPairNode.prototype.findNewMatch = function(epuz, puz, val1, excluded) {
     if (!hasB(this.node1.vals, val1)) {return;}
 
     var vals2 = this.node2.vals;
     for(var i=0; i<vals2.length; ++i) {
         var newv2 = vals2[i];
-        if (this.isMatch(val1, newv2) {
+        if (newv2 === excluded) {continue;}
+
+        var cpairs = this.getCPairsNeeded(val1, newv2);
+        if (this.isMatch(cpairs)) {
             this.matches[val1] = newv2;
+            this.match_reqs[val1] = cpairs;
             epuz.addGapPairWakeup(makePair(this.node2.ind, newv2), this);
             // add self as listener to new cpairs. Don't bother trying to remove self from old ones
             var this_ = this;
-            this.getCPairsNeeded(val1, newv2).forEach(function (info) {
+            cpairs.forEach(function (info) {
                 info[0].listeners[info[1]].push(this_);
             });
 
@@ -140,9 +146,9 @@ GapPairNode.prototype.update = function(epuz, puz) {
         var val1 = n1vals[i1];
         var val2 = this.matches[val1];
 
-        if (puz.checkGap(makePair(this.node2.ind, val2)) && this.isMatch(val1, val2)) {continue;}
+        if (puz.checkGap(makePair(this.node2.ind, val2)) && this.isMatch(this.match_reqs[val1])) {continue;}
         //old val2 match no longer valid - try to find a new one
-        this.findNewMatch(epuz, puz, val1);
+        this.findNewMatch(epuz, puz, val1, val2);
     }
 };
 
