@@ -38,13 +38,15 @@ function handleDone(name, t0) {return function(e) {
 var pool = new Pool(4);
 pool.init();
 
+// while(puzzles.length > 50) {puzzles.pop();}
+
 for(var i=0; i<puzzles.length; ++i){
     var puzzle_raw = puzzles[i];
     var puzzle = {rows:puzzle_raw[1], cols:puzzle_raw[2], grid:null};
     var cb = handleDone(puzzle_raw[0], window.performance.now());
     puzzle.name = puzzle_raw[0];
 
-    var workerTask = new WorkerTask('js/solver/solver.js', cb, puzzle);
+    var workerTask = new WorkerTask('js/solver/main.js', cb, puzzle);
     pool.addWorkerTask(workerTask);
 }
 

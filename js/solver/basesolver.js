@@ -194,7 +194,8 @@ Puzzle.prototype.createReverseNodes = function () {
 
             var pair = makePair(gnode.ind, val);
             var needed = gnode.needed[val];
-            for(var k in needed) {
+            for(var k_ in needed) {
+                var k = parseInt(k_);
                 var forcedpair = makePair(k, needed[k]);
                 list[forcedpair].push(pair);
             }

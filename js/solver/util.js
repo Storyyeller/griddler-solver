@@ -1,18 +1,12 @@
 "use strict";
 
-// As of Firefox 27.0.1, WebWorkers don't have a reference to console. Firefox throws an
-// error if you try to reference it. It also throws an error if you try to check for its
-// presence with if (console). Checking if (self.console) seems to work.
+var print = function(x) {console.log(JSON.stringify(x));};
+// var assert = function(x) {console.assert(x);}; //Doesn't seem to work, at least in Chrome
 var assert = function(x) {
-    if (self.console) {
-        console.assert(x);
-    }
-};
-
-var print = function(x) {
-    if (self.console) {
-        console.log(JSON.stringify(x));
-    }
+  if(!x) {
+    console.log((new Error()).stack);
+    undefined.x;
+  }
 };
 
 var _add = function(a,b) {return a+b;};

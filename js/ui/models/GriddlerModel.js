@@ -29,14 +29,14 @@
                 this.trigger("stepsChanged");
             }
 
-            var self = this;
-            this.worker = new Worker("js/solver/solver.js");
+            this.worker = new Worker("js/solver/main.js");
 
             //TODO: do something useful on this event
             this.worker.addEventListener("error", function(evt) {
                 console.log("A solver error occurred!!!");
             });
 
+            var self = this;
             this.worker.addEventListener("message", function(evt) {
                 if (evt.data.type === "done") {
                     self._cleanupSolve(true);
