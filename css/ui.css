@@ -150,6 +150,7 @@ body {
     vertical-align: middle;
     margin: 2px;
     border-radius: 5px;
+    font-size: 0.625em;
 }
 
 .griddler .info-bar .button-container button:hover {
