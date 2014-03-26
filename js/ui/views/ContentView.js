@@ -17,11 +17,11 @@
             var currentPuzzle = this.model.get("currentPuzzle");
 
             if (currentPuzzle) {
-                this.puzzleView = new PuzzleView({
+                this.griddlerView = new GriddlerView({
                     model: this.model.get("currentPuzzle")
                 });
-                this.$el.append(this.puzzleView.$el);
-                this.puzzleView.render();
+                this.$el.append(this.griddlerView.$el);
+                this.griddlerView.render();
             }
 
             return this;

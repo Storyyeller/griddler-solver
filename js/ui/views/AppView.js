@@ -19,8 +19,8 @@
             var layoutOptions = {
                 applyDefaultStyles: false,
                 defaults: {
-                    spacing_open: 1,
-                    spacing_closed: 1
+                    spacing_open: 0,
+                    spacing_closed: 0
                 }
             };
 

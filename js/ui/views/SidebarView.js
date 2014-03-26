@@ -2,22 +2,26 @@
     exports.SidebarView = Backbone.View.extend({
         tagName: "div",
 
-        id: "leftSidebar",
-
-        className: "ui-layout-west",
+        className: "sidebar ui-layout-west",
 
         events: {
-            "click #openButton": "open",
-            "click #exportButton": "exportPuzzle"
+            "click .open-button": "open",
+            "click .export-button": "exportPuzzle",
+            /* TODO: make sure this makes logical sense */
+            "click .recent-puzzle-link.clickable": "recentClicked",
+            "click .clear-recents-button": "clearRecents"
         },
 
         initialize: function(opts) {
             this.listenTo(AppModelSingleton, "change:currentPuzzle", this.updateButtonState);
+            this.listenTo(AppModelSingleton, "change:currentPuzzle", this.updateRecents);
+            this.listenTo(AppModelSingleton, "cacheUpdated", this.updateRecents);
+
+            this.openDialog = new OpenDialogView();
         },
 
         open: function() {
-            var openDialog = new OpenDialogView();
-            openDialog.show();
+            this.openDialog.show();
         },
 
         exportPuzzle: function() {
@@ -27,19 +31,59 @@
         },
 
         updateButtonState: function() {
-            var exportButton = this.$el.find("#exportButton");
             if (AppModelSingleton.get("currentPuzzle")) {
-                exportButton.show();
+                this.exportButton.show();
             } else {
-                exportButton.hide();
+                this.exportButton.hide();
             }
+        },
+
+        clearRecents: function() {
+            AppModelSingleton.clearCache();
+        },
+
+        //TODO: make more efficient.  It updates way too frequently.
+        updateRecents: function() {
+            var identifiers = AppModelSingleton.getCachedIdentifiers();
+            if (!identifiers.length) {
+                this.recentsContainer.css("display", "none");
+            } else {
+                this.recentsContainer.css("display", "block");
+
+                var currentGriddlerModel = AppModelSingleton.get("currentPuzzle");
+                var currentIdentifier = currentGriddlerModel ? currentGriddlerModel.get("identifier") : null;
+
+                var buffer = [];
+                identifiers.forEach(function(identifier) {
+                    buffer.push("<span class='");
+                    buffer.push((identifier === currentIdentifier) ? "recent-puzzle-link" : "recent-puzzle-link clickable")
+                    buffer.push("'>");
+                    buffer.push(identifier);
+                    buffer.push("</span>");
+                });
+
+                this.recentLinks.html(buffer.join(""));
+            }
+
+            this.delegateEvents();
+        },
+
+        recentClicked: function(evt) {
+            AppModelSingleton.loadCachedGriddler($(evt.target).text());
         },
 
         render: function() {
             var templateFunction = TemplateLoader.get("Sidebar");
             this.$el.html(templateFunction());
+
+            this.exportButton = this.$el.find(".export-button");
+            this.recentsContainer = this.$el.find(".recents-container");
+            this.recentLinks = this.$el.find(".recent-links");
+
             this.updateButtonState();
+            this.updateRecents();
             this.delegateEvents();
+
             return this;
         }
     });
