@@ -13,7 +13,7 @@
             sg_clue: "on",
             sg_soln: "on"
         }).done(function(data, textStatus, jqXHR) {
-            if (data === "The ss format cannot handle multicolor puzzles\n") {
+            if (data === "The ss format cannot handle multicolor puzzles") {
                 callback(new Error("Puzzle " + id + " is a multicolor puzzle which is unsupported"), null);
             } else {
                 FileManager.parseString(data, "non", function(err, puzzle) {

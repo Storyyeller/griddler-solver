@@ -12,7 +12,14 @@
                     "solveAborted"
                     "solveFailed"
                  */
-                solveState: "solveNotStarted"
+                solveState: "solveNotStarted",
+                identifier: null,
+                /* Possible square sizes:
+                    "small",
+                    "medium",
+                    "large"
+                 */
+                squareSize: "medium"
             };
         },
 
@@ -20,6 +27,8 @@
             if (this.worker) {
                 throw new Error("puzzle is already being solved");
             }
+
+            this.set("currentStep", -1);
 
             var p = this.get("puzzle");
             if (!p.solution_steps) {

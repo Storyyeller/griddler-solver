@@ -2,7 +2,7 @@
     exports.OpenDialogView = Backbone.View.extend({
         tagName: "div",
 
-        id: "openDialog",
+        className: "open-dialog",
 
         events: {
             "change #fileChooser": "openFile",
@@ -52,7 +52,9 @@
         render: function() {
             var templateFunction = TemplateLoader.get("OpenDialog");
             var html = templateFunction({
-                websites: ScraperManager.getSupportedURLs()
+                //TODO: remove reference to ScraperManager
+                websites: ScraperManager.getSupportedURLs(),
+                extensions: AppModelSingleton.getSupportedExtensions()
             });
             this.$el.html(html);
             this.delegateEvents();

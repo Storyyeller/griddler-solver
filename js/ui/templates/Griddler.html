@@ -1,65 +1,53 @@
-<div style="display:table;">
-    <div style="display:table-row;">
-
-        <div style="display:table-cell;">
-        </div>
-
-        <div style="display:table-cell;">
-            <div style="display:table;">
-                <% for (var r = 0; r < maxColHints; ++r) { %>
-                    <div style="display: table-row;">
-                        <%
-                        for (var c = 0; c < puzzle.cols.length; ++c) {
-                            var startRow = maxColHints - puzzle.cols[c].length; %>
-                            <div class="GriddlerSquare GriddlerHintSquare" style="display: table-cell;">
-                                <% if (r >= startRow) print(puzzle.cols[c][r - startRow]); %>
-                            </div>
-                        <% } %>
-                    </div>
-                <% } %>
+<!-- Metadata -->
+<div class="ui-layout-north info-bar clearfix">
+    <div class="left">
+        <div>
+            <h3 class="griddler-identifier" title="<%= identifier %>"><%= identifier %></h3>
+            <!-- TODO: fix class names -->
+            <img class="popover-trigger metadata-popover-trigger" style="vertical-align:middle;" src="img/Button-Info-icon.png" />
+            <div class="popover metadata-popover">
+                <% _.each(puzzle.metadata, function(value, key) { %>
+                <span><strong><%- key %>: </strong><%- value %></span><br />
+                <% }); %>
             </div>
+            <select class="squareSizeSelect">
+                <option value="small">Small Squares</option>
+                <option value="medium" selected>Medium Squares</option>
+                <option value="large">Large Squares</option>
+            </select>
         </div>
-
     </div>
 
-    <div style="display:table-row;">
-
-        <div style="display:table-cell;">
-
-            <div style="display: table;">
-                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
-                    <div style="display: table-row;">
-                        <% for (var c = maxRowHints; c >= 1; --c) { %>
-                            <div class="GriddlerSquare GriddlerHintSquare" style="display:table-cell;">
-                                <%
-                                    var index = puzzle.rows[r].length - c;
-                                    if (index >= 0) { %>
-                                        <%= puzzle.rows[r][index] %>
-                                    <% }
-                                %>
-                            </div>
-                        <% } %>
-                    </div>
-                <% } %>
-            </div>
-
+    <div class="right">
+        <div class="solver-status">
+            <span id="solveTime">Placeholder</span>
+            <span class="restart-solver-container">
+                <span>(</span><span class="restart-solver-link">restart solver</span><span>)</span>
+            </span>
         </div>
-
-        <div style="display:table-cell;">
-
-            <div class="inPlaySquaresContainer" style="display:table;">
-                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
-                    <div style="display:table-row;">
-                        <% for (var c = 0; c < puzzle.cols.length; ++c) { %>
-                            <div style="display:table-cell;" class="GriddlerSquare GriddlerUnknownSquare">
-
-                            </div>
-                        <% } %>
-                    </div>
-                <% } %>
-            </div>
-
+        <div id="currentStep">Placeholder</div>
+        <div class="step-explanation-container">
+            <span class="step-logic-type">Placeholder</span>
+            <!--<img class="popover-trigger step-more-info-popover-trigger" style="vertical-align:middle;" src="img/Button-Info-icon.png" />-->
+            <!--<div class="popover step-more-info-popover">-->
+                <!--Foo-->
+            <!--</div>-->
         </div>
-
     </div>
+
+    <div class="center">
+        <!-- Do not remove the button-container div. It is needed to vertically align the buttons (see css). -->
+        <div class="button-container">
+            <button class="jumpBeginning">Beginning</button>
+            <button class="previous"><< Previous</button>
+            <button class="next">Next >></button>
+            <button class="jumpEnd">Solution</button>
+        </div>
+    </div>
+
+</div>
+
+<!--TODO: center griddler horizontally and vertically-->
+<div class="ui-layout-center board-container">
+
 </div>

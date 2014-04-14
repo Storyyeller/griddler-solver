@@ -1,0 +1,65 @@
+<div style="display:table;">
+    <div style="display:table-row;">
+
+        <div style="display:table-cell;">
+        </div>
+
+        <div style="display:table-cell;">
+            <div style="display:table;">
+                <% for (var r = 0; r < maxColHints; ++r) { %>
+                    <div style="display: table-row;">
+                        <%
+                        for (var c = 0; c < puzzle.cols.length; ++c) {
+                            var startRow = maxColHints - puzzle.cols[c].length; %>
+                            <div class="board-square board-hint-square" style="display: table-cell;">
+                                <% if (r >= startRow) print(puzzle.cols[c][r - startRow]); %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display:table-row;">
+
+        <div style="display:table-cell;">
+
+            <div style="display: table;">
+                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
+                    <div style="display: table-row;">
+                        <% for (var c = maxRowHints; c >= 1; --c) { %>
+                            <div class="board-square board-hint-square" style="display:table-cell;">
+                                <%
+                                    var index = puzzle.rows[r].length - c;
+                                    if (index >= 0) { %>
+                                        <%= puzzle.rows[r][index] %>
+                                    <% }
+                                %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+
+        <div style="display:table-cell;">
+
+            <div class="inPlaySquaresContainer" style="display:table;">
+                <% for (var r = 0; r < puzzle.rows.length; ++r) { %>
+                    <div style="display:table-row;">
+                        <% for (var c = 0; c < puzzle.cols.length; ++c) { %>
+                            <div style="display:table-cell;" class="board-square board-unknown-square">
+
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+
+    </div>
+</div>

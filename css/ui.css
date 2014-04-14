@@ -1,109 +1,90 @@
-/*.ui-layout-center {*/
-    /*overflow:auto;*/
-/*}*/
+/*
+ * ======================================================================
+ * Clearfix hack from http://nicolasgallagher.com/micro-clearfix-hack/
+ * ======================================================================
+ */
+
+.clearfix:before, .clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.clearfix {
+    *zoom: 1;
+}
+
+/*
+ * ======================================================================
+ * Page styles
+ * ======================================================================
+ */
 
 body {
     font-family: "Verdana", "Georgia", serif;
 }
 
-#leftSidebar {
+.popover {
+    position: absolute;
+    background: #333;
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+    /* TODO: needed? */
+    max-width: 500px;
+}
+
+/*
+ * ======================================================================
+ * Sidebar styles
+ * ======================================================================
+ */
+
+.sidebar {
     text-align: center;
     color: white;
     background-color: black;
 }
 
-.sidebarButton {
-    width: 100px;
-}
-
-#titleText {
+.sidebar .app-name {
     font-size: 24pt;
 }
 
-#contentArea {
-    text-align: center;
-    padding-top: 10px;
+.sidebar hr {
+    width: 90%;
+    border-color: lightgray;
 }
 
-#puzzleContainer {
-    text-align: center;
-    padding: 10px 0 0 0;
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
+.sidebar button {
+    width: 100px;
 }
 
-#puzzleContainer div {
-    vertical-align: top; /* TODO: get rid of this and only put this property on the divs that need it */
-}
-
-#metadataContainer {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-#metadataContainer span {
+.sidebar .recent-puzzle-link {
     display: block;
+    color: lightgray;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
-#metadataContainer .puzzleName {
-    font-weight: bold;
-    font-size: 24pt;
-}
-
-#metadataContainer .puzzleAuthor {
-    font-size: 18pt;
-}
-
-#metadataContainer .puzzleDescription {
-    font-size: 18pt;
-}
-
-#buttonsContainer {
-    margin: 10px;
-}
-
-#buttonsContainer p {
-    margin: 2px;
-}
-
-#buttonsContainer button {
-    width: 100px;
-    height: 40px;
-    border: 1px solid black;
-    background-color: #ececec;
-    vertical-align: middle;
-    margin: 2px;
-}
-
-#buttonsContainer button:hover {
-    background-color: lightgray;
+.sidebar .clickable {
+    text-decoration: underline;
     cursor: pointer;
 }
 
-#stepInfoContainer {
-    width: 200px;
-    height: 350px;
-    display: inline-block;
-    border: 1px solid black;
-    margin-left: 20px;
-}
+/*
+ * ======================================================================
+ * Dialog styles
+ * ======================================================================
+ */
 
-/*#simplemodal-overlay {background-color:#000;}*/
-
-/*#simplemodal-container a.modalCloseImg {*/
-    /*background:url(../lib/SimpleModal/x.png) no-repeat; *//* adjust url as required */
-    /*width:25px;*/
-    /*height:29px;*/
-    /*display:inline;*/
-    /*z-index:3200;*/
-    /*position:absolute;*/
-    /*top:-15px;*/
-    /*right:-18px;*/
-    /*cursor:pointer;*/
-/*}*/
-
-#openDialog {
+.open-dialog {
     border-radius: 10px;
     padding: 0 20px 20px 20px;
     border: 1px solid black;
@@ -111,50 +92,168 @@ body {
     width: 400px;
 }
 
-.GriddlerView {
+/*
+ * ======================================================================
+ * Griddler styles (not including the board)
+ * ======================================================================
+ */
+
+.griddler {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+.griddler .info-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #4072b4;
+    color: white;
+    padding: 5px;
+    text-align: center;
+    min-width: 860px; /* TODO: too small, right col wraps at this width with long text */
+    vertical-align: middle;
+    border-bottom: 1px solid #33488d;
+}
+
+.griddler .info-bar .left {
+    float: left;
+    width: 29%;
+    text-align: left;
+}
+
+.griddler .info-bar .right {
+    float: right;
+    width: 29%;
+    text-align: right;
+}
+
+.griddler .info-bar .center {
+    height: 100%;
+    margin: 0 auto;
+    /* TODO: put this inside a nested div instead of on the center container? */
+    display: table; /* this is set to table so that the buttons container can be
+                    set to display: table-cell, which allows use of the
+                    vertical-align: middle property */
+}
+
+.griddler .info-bar .button-container {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.griddler .info-bar .button-container button {
+    width: 80px;
+    height: 30px;
+    border: 1px solid black;
+    background-color: #ececec;
+    vertical-align: middle;
+    margin: 2px;
+    border-radius: 5px;
+    font-size: 0.625em;
+}
+
+.griddler .info-bar .button-container button:hover {
+    background-color: lightgray;
+    cursor: pointer;
+}
+
+.griddler .info-bar .griddler-identifier {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 5px;
+}
+
+.griddler .info-bar .metadata-popover-trigger:hover {
+    cursor: pointer;
+}
+
+.griddler .info-bar .solver-status {
+    font-size: 0.8em;
+}
+
+.griddler .info-bar .step-explanation-container .step-logic-type {
+    font-style: italic;
+}
+
+.griddler .info-bar .restart-solver-link {
+    color: lightgray;
+    text-decoration: underline;
+    cursor: pointer;
+    font-style: italic;
+}
+
+/*
+ * ======================================================================
+ * Board styles
+ * ======================================================================
+ */
+
+.board-container {
+    padding: 5px;
+    overflow: scroll;
+}
+
+.board {
     display: inline-block;
     border-collapse: collapse;
 }
 
-.GriddlerSquare {
-    /*line-height: 20px;*/
+.board div {
+    vertical-align: top;  /* TODO: get rid of this and only put this property on the divs that need it */
+}
+
+.board-square {
+    background-color: white;
+    border: 1px solid #3a3a3a;
+    text-align: center;
+    vertical-align: middle !important;   TODO: get rid of !important once you fix the above TODO
+}
+
+.board-small .board-square {
+    min-width: 15px;
+    width: 15px;
+    min-height: 15px;
+    height: 15px;
+    font-size: 7pt;
+}
+
+.board-medium .board-square {
     min-width: 20px;
     width: 20px;
     min-height: 20px;
     height: 20px;
-    background-color: white;
-    border: 1px solid #3a3a3a;
-    /*display: inline-block;*/
-    text-align: center;
-    vertical-align: middle !important;  /* TODO: get rid of !important once you fix the above TODO */
     font-size: 10pt;
 }
 
-/*.GriddlerRow {*/
-    /*line-height: 0;*/
-/*}*/
+.board-large .board-square {
+    min-width: 25px;
+    width: 25px;
+    min-height: 25px;
+    height: 25px;
+    font-size: 12pt;
+}
 
-.GriddlerHintSquare {
+.board-hint-square {
     background-color: lightsteelblue;
 }
 
-/*.GriddlerOutOfPlaySquare {*/
-    /*border-color: transparent;*/
-/*}*/
-
-.GriddlerEmptySquare {
+.board-empty-square {
     background-color: white;
 }
 
-.GriddlerFilledSquare {
+.board-filled-square {
     background-color: black;
 }
 
-.GriddlerUnknownSquare {
+.board-unknown-square {
     background-color: gray;
 }
 
-.GriddlerChangedSquare {
+.board-changed-square {
     /*-webkit-box-shadow: inset 0 0 10px lime;*/
     /*-moz-box-shadow: inset 0 0 10px lime;*/
     /*box-shadow:inset 0 0 10px lime;*/
@@ -167,13 +266,13 @@ body {
     /*box-shadow: 0 0 0 2px crimson inset;*/
 }
 
-.GriddlerChangedSquare:before {
+.board-changed-square:before {
     width: 100%;
     height: 100%;
     text-align: center;
     content: '\25CF';
     color: crimson;
-    font-size: 14pt;
+    font-size: 2em; /*14pt;*/
     line-height: 10pt;
     vertical-align: top;
 }
