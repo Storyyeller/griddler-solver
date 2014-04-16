@@ -12,13 +12,16 @@ var assert = function(x) {
 var _add = function(a,b) {return a+b;};
 var sum = function(seq) {return seq.reduce(_add, 0);};
 
-//Warning, sorts in place!
+// Sort an array of ints. Warning, sorts in place!
 var sort = function(arr) {
     arr.sort(function(a,b) {return a-b;});
     return arr;
 };
 
+// find/has/discard L perform a linear search
+// the B versions use binary search and hence are only usable for sorted arrays
 
+// Find index of element, or -1 on failure
 var findL = function(arr, searchElement) {return arr.indexOf(searchElement);}
 var findB = function(arr, searchElement) {
   // adapted from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
@@ -42,14 +45,16 @@ var findB = function(arr, searchElement) {
   return -1;
 };
 
+// check if element is in array
 var hasL = function(arr, searchElement) {return findL(arr, searchElement) !== -1;};
 var hasB = function(arr, searchElement) {return findB(arr, searchElement) !== -1;};
+
 
 var _discard = function(arr, arr_ind) {
     if (arr_ind !== -1) {arr.splice(arr_ind, 1);}
     return arr_ind !== -1;
 };
 
+// discard element if present. return true if element was discarded
 var discardL = function(arr, x) {return _discard(arr, findL(arr, x));};
 var discardB = function(arr, x) {return _discard(arr, findB(arr, x));};
-

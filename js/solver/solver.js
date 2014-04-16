@@ -9,6 +9,14 @@ importScripts('basesolver.js');
 //     return results;
 // };
 
+
+//This file holds all of the stuff for edge logic
+//CellPairNode keeps track of all possible value pairs for a pair of adjacent cells
+//so that it can see if one cell value implies another.
+//GapPairNode represents the constraint between two gaps in adjacent rows (or columns)
+//there are actually two such nodes for any pair since it is not symetric
+//it tries to prune gap1 by seeing if a given value leaves no legal values for gap2
+
 var CellPairNode = function(epuz, puz, cell1, cell2, rnodes1, rnodes2) {
     this.cell_ind1 = cell1.ind;
     this.cell_ind2 = cell2.ind;
@@ -80,8 +88,8 @@ var GapPairNode = function(epuz, puz, node1, node2, cellpairs_dict, cellpairs_re
     //initialize this.matches (and add appropriate listeners)
     var this_ = this;
     //Important! Make copy of vals before iterating, since we may prune vals, which causes issues
-    //use 65536 as the excluded value since it is garuenteed to not be a valid value for node 2
-    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1, makePair(1,0));});
+    //use MAXPAIRVAL+1 as the excluded value since it is garuenteed to not be a valid value for node 2
+    node1.vals.slice().forEach(function(val1) {this_.findNewMatch(epuz, puz, val1, MAXPAIRVAL+1);});
     puz.simplifyWithMessage('edge logic');
 };
 GapPairNode.prototype.getCPairsNeeded = function(val1, val2) {
@@ -138,6 +146,7 @@ GapPairNode.prototype.findNewMatch = function(epuz, puz, val1, excluded) {
     puz.pruneGap(makePair(this.node1.ind, val1));
 };
 GapPairNode.prototype.update = function(epuz, puz) {
+    // if one of the nodes has a fixed known value, arc consistency will take care of everything we could learn anyway
     if (this.node1.vals.length <= 1) {return;}
     if (this.node2.vals.length <= 1) {return;}
 
@@ -152,6 +161,7 @@ GapPairNode.prototype.update = function(epuz, puz) {
     }
 };
 
+// A class that wraps the basic puzzle class and holds information and methods related to edge solving
 var EdgePuzzle = function(puz) {
     this.puz = puz;
     this.cellpQ = new IntrusiveQueue();
@@ -174,9 +184,8 @@ EdgePuzzle.prototype.addGapPairWakeup = function(pair, gpnode) {
     this.wakeup_dict_gp[pair] = this.wakeup_dict_gp[pair] || [];
     this.wakeup_dict_gp[pair].push(gpnode);
 };
+// simplfy with edge logic. Assume that puzzle was already simplified with line logic
 EdgePuzzle.prototype.simplify = function() {
-    // this.puz.simplify(); //we may have pruned things during creation
-
     while(this.cellpQ.nonempty() || this.gappQ.nonempty() || this.puz.newgap_prunes.length > 0){
         if (this.cellpQ.nonempty()) {
             this.cellpQ.pop().update(this, this.puz);
@@ -291,6 +300,9 @@ EdgePuzzle.prototype.solve = function(t0) {
     this.puz.newgap_prunes = []; //obviously we don't care about any gaps pruned during basic solving
     this.createLookups();
 
+    //Create edge constraints one at a time going inward from the edges instead of all at once
+    //this is because edges are the most likely to yield useful results. Creating them first and
+    //simplifying before trying to create the next row in means we can often save a lot of work
     while(this.R1 < this.R2 || this.C1 < this.C2) {
         this.createNextEdge();
         this.simplify();
