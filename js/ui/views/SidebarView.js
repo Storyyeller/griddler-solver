@@ -36,6 +36,13 @@
             } else {
                 this.exportButton.hide();
             }
+
+            if (this.layout) {
+                var northPane = this.$el.find(".ui-layout-north");
+                northPane.css("height", "auto");
+                var naturalHeight = northPane.height();
+                this.layout.sizePane("north", naturalHeight);
+            }
         },
 
         clearRecents: function() {
@@ -56,7 +63,7 @@
                 var buffer = [];
                 identifiers.forEach(function(identifier) {
                     buffer.push("<span class='");
-                    buffer.push((identifier === currentIdentifier) ? "recent-puzzle-link" : "recent-puzzle-link clickable")
+                    buffer.push((identifier === currentIdentifier) ? "recent-puzzle-link" : "recent-puzzle-link clickable");
                     buffer.push("'>");
                     buffer.push(identifier);
                     buffer.push("</span>");
@@ -83,6 +90,16 @@
             this.updateButtonState();
             this.updateRecents();
             this.delegateEvents();
+
+            var layoutOptions = {
+                applyDefaultStyles: false,
+                defaults: {
+                    spacing_open: 0,
+                    spacing_closed: 0
+                }
+            };
+            this.layout = this.$el.layout(layoutOptions);
+            this.recentsContainer.layout(layoutOptions);
 
             return this;
         }

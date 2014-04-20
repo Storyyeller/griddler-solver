@@ -44,8 +44,13 @@
                 }
 
                 if (LocalGriddlerCache.contains(currentPuzzle.get("identifier"))) {
-                    /* update the version of the puzzle in the cache */
-                    LocalGriddlerCache.insert(currentPuzzle);
+                    try {
+                        /* update the version of the puzzle in the cache */
+                        LocalGriddlerCache.insert(currentPuzzle);
+                    } catch (err) {
+                        alert("Error: cache full. Puzzle could not be saved. Try clearing your recents.")
+                    }
+
                 }
             }
         },

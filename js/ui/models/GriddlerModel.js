@@ -19,7 +19,8 @@
                     "medium",
                     "large"
                  */
-                squareSize: "medium"
+                squareSize: "medium",
+                orderingValue: 0
             };
         },
 

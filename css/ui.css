@@ -59,7 +59,8 @@ body {
 
 .sidebar hr {
     width: 90%;
-    border-color: lightgray;
+    border-color: gray;
+    margin-bottom: 1.2em;
 }
 
 .sidebar button {
@@ -69,13 +70,25 @@ body {
 .sidebar .recent-puzzle-link {
     display: block;
     color: lightgray;
-    margin-top: 1em;
     margin-bottom: 1em;
 }
 
 .sidebar .clickable {
     text-decoration: underline;
     cursor: pointer;
+}
+
+.sidebar .recents-container .ui-layout-north {
+    padding-bottom: 15px;
+}
+
+.sidebar .ui-layout-center {
+    padding-bottom: 7px;
+    overflow: auto;
+}
+
+.sidebar .recents-container {
+    height: 100%;
 }
 
 /*
