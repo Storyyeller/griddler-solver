@@ -12,6 +12,7 @@
                 var model = this.get(identifiers[i]);
                 orderMap[identifiers[i]] = model.get("orderingValue");
             }
+
             identifiers.sort(function(a, b) {
                 return orderMap[b] - orderMap[a];
             });
@@ -61,6 +62,16 @@
 
         _triggerCacheUpdated: function() {
             this.trigger("cacheUpdated");
+        },
+
+        sizeInMegabytes: function() {
+            var bytes = 0;
+            for (var key in localStorage) {
+                var value = localStorage.getItem(key);
+                bytes += value.length * 2;
+            }
+
+            return bytes / 1024. / 1024.;
         }
 
     });

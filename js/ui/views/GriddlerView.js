@@ -13,6 +13,18 @@
             "click .restart-solver-link": "restartSolver"
         },
 
+        sanitizedLogicTypes: {
+            "line logic" : "Line Logic",
+            "reverse line logic": "Reverse Line Logic",
+            "edge logic": "Edge Logic"
+        },
+
+        logicExplanations: {
+            "line logic": "When our solver says it used line logic, what it does it keeps track for each gap (two runs of black plus the white space in between) of all the possible locations where it can appear. When one gap has only a single location it can appear in, the corresponding cells in the grid are filled in as known and the process repeats."
+            , "reverse line logic": "When our solver says it used reverse line logic, what it is actually doing is keeping track for every unknown cell, all of the gaps in that cell's row or column that can cause the cell to be a specific color. In the finished puzzle, every cell is part of at least one gap, so there must be at least one gap along the row and at least one along the column. If there are no gaps remaining that can cause a cell to be a specific color, that color is removed.<br /><br />This most commonly results in filling in white squares next to an existing black square. For example, say you have a row that consists only of one black square, while all the clues are 1s. You don't know which specific clue that black square corresponds to, so forward line logic won't help. However, you do know that no matter which clue it is, the squares next to it will still be white and hence can be filled in."
+            , "edge logic": "When the solver says it used edge logic, what it is basically doing is considering a pair of adjacent rows (or columns), usually but not necessarily on the edge of the puzzle. Say we're considering row 1 and row 2.<br /><br />For each pair of adjacent unknown cells, we can tell which pairs of colors are possible by examining the gaps on the intersecting columns. In some cases, one cell implies a value in the other. For each gap position in row1, all of the implied cells in row2 are calculated. If there is any gap in row 2 which has no possible values after this assignment, then the position for gap 1 can be ruled out."
+        },
+
         initialize: function() {
             this.boardView = new BoardView({
                 model: this.model
@@ -75,9 +87,9 @@
             if (solveState === "solveCompleted") {
                 container.text(container.text() + " ... done!");
             } else if (solveState === "solveAborted") {
-                container.text(container.text() + " ... solve aborted");
+                container.text(container.text() + " ... aborted!");
             } else if (solveState === "solveFailed") {
-                container.text(container.text() + " ... failed");
+                container.text(container.text() + " ... failed!");
             }
         },
 
@@ -114,8 +126,14 @@
 
             if (currentStep === -1) {
                 stepComment = "";
+                $(".step-more-info-popover-trigger").hide();
             } else {
-                stepComment = puzzle.solution_steps[currentStep].type;
+                var logicType = puzzle.solution_steps[currentStep].type;
+
+                stepComment = this.sanitizedLogicTypes[logicType];
+                this.stepMoreInfoPopoverElement.html(this.logicExplanations[logicType]);
+
+                $(".step-more-info-popover-trigger").show();
             }
 
             this.$el.find("#currentStep").text(progressText);
@@ -153,11 +171,11 @@
 
             var metadataTriggerElement = this.$el.find(".metadata-popover-trigger");
             var metadataPopoverElement = this.$el.find(".metadata-popover");
-            var metadataPopover = new GSPopover(metadataTriggerElement, metadataPopoverElement);
+            var metadataPopover = new GSPopover(metadataTriggerElement, metadataPopoverElement, false, false);
 
-//            var stepMoreInfoTriggerElement = this.$el.find(".step-more-info-popover-trigger");
-//            var stepMoreInfoPopoverElement = this.$el.find(".step-more-info-popover");
-//            var stepMoreInfoPopover = new GSPopover(stepMoreInfoTriggerElement, stepMoreInfoPopoverElement);
+            this.stepMoreInfoTriggerElement = this.$el.find(".step-more-info-popover-trigger");
+            this.stepMoreInfoPopoverElement = this.$el.find(".step-more-info-popover");
+            var stepMoreInfoPopover = new GSPopover(this.stepMoreInfoTriggerElement, this.stepMoreInfoPopoverElement, false, true);
 
             this.updateState();
             this.updateTime();

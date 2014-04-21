@@ -60,6 +60,10 @@
                 puzzle: puzzle,
                 identifier: identifier
             });
+            var cacheMB = LocalGriddlerCache.sizeInMegabytes();
+            if (cacheMB >= 9) {
+                alert("Hey! The puzzles in your recents list are taking about 9 MB of space.  Beyond 9 MB, some things might not work correctly, so please export the puzzles you want to keep and clear your recents to ensure things keep running smoothly.  Thanks!");
+            }
             this.loadGriddlerModel(model);
         },
 

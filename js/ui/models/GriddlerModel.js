@@ -50,8 +50,12 @@
             this.worker.addEventListener("message", function(evt) {
                 if (evt.data.type === "done") {
                     self._cleanupSolve(true);
-                    self._insertSolutionIntoPuzzle();
-                    self.set("solveState", "solveCompleted");
+                    if (evt.data.data.solved) {
+                        self._insertSolutionIntoPuzzle();
+                        self.set("solveState", "solveCompleted");
+                    } else {
+                        self.set("solveState", "solveFailed");
+                    }
                 } else if (evt.data.type === "error") {
                     self._cleanupSolve(true);
                     self.set("solveState", "solveFailed");

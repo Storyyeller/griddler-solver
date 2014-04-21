@@ -13,8 +13,14 @@
             sg_clue: "on",
             sg_soln: "on"
         }).done(function(data, textStatus, jqXHR) {
-            if (data === "The ss format cannot handle multicolor puzzles") {
-                callback(new Error("Puzzle " + id + " is a multicolor puzzle which is unsupported"), null);
+            var doesNotExistMessage = "Puzzle " + id + " does not exist\n";
+            var notBeenPublishedMessage = "Puzzle " + id + " has not been published\n";
+            var multiColorMessage = "The ss format cannot handle multicolor puzzles.\n";
+
+            if (data === multiColorMessage) {
+                callback(createMulticolorError(id), null);
+            } else if (data === doesNotExistMessage || data === notBeenPublishedMessage) {
+                callback(createNotFoundError(id), null);
             } else {
                 FileManager.parseString(data, "non", function(err, puzzle) {
                     if (err) {
@@ -25,13 +31,21 @@
                 });
             }
         }).fail(function(jqXHR, textStatus, errorThrown) {
-            callback(new Error("Puzzle could not be found on webpbn.com"), null);
+            callback(createNotFoundError(id), null);
         });
     };
 
     WebPBNScraper.getURL = function() {
         return "webpbn.com";
     };
+
+    function createNotFoundError(id) {
+        return new Error("Puzzle " + id + " could not be found on webpbn.com");
+    }
+
+    function createMulticolorError(id) {
+        return new Error("Puzzle " + id + " is a multicolor puzzle which is unsupported");
+    }
 
     if (exports) {
         exports.WebPBNScraper = WebPBNScraper;
