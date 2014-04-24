@@ -1,0 +1,171 @@
+<html>
+<head>
+<title>Webpbn: Puzzle Export</title>
+<link rel="stylesheet" href="text.css" type="text/css"/>
+<script>var suf={gecode:'cpp',dzn:'dzn',olsak:'g',csv:'csv',ss:'non',cwd:'cwd',xml:'xml',cwc:'cwc',sg:'sgriddler',ngb:'ngb',xls:'xlsx',pnm:'pnm',nin:'nin',mk:'mk'};function settarget()
+{var form=document.getElementById('form');var id=document.getElementsByName('id')[0].value;var fmts=document.getElementsByName('fmt');var fmt;for(var i=0;i<fmts.length;i++)
+if(fmts[i].checked)
+{fmt=fmts[i].value;break;}
+if(!form||!id||!fmt)return true;form.action="export.cgi/webpbn"+pad(id,6)+(suf[fmt]?'.'+suf[fmt]:'');return true;}
+function pad(n,width)
+{n=n+'';return n.length>=width?n:new Array(width-n.length+1).join('0')+n;}</script>
+</head>
+<body>
+<div class="title">
+<span class="huge">Web Paint-by-Number<br>Puzzle Export</span>
+</div>
+<p>
+This is an tool for exporting puzzles from the webpbn library
+in file formats that can be read by other programs
+that operate on paint-by-number puzzles, or at least the ones
+sensible enough to document their file formats.
+<p>
+Enter a puzzle number and select a format below.
+The result will be displayed in your browser.
+You'll need to cut/paste it to save it to a file.
+<p>
+If you are trying to find particular types of puzzles, and don't
+know what puzzle numbers you want, you should create a (free) account
+on <a href="/">webpbn.com</a> and use the "Find Puzzles" function to
+search for puzzles.
+<p>
+<strong>NOTE:</strong>
+<font color="green">
+Puzzles on the webpbn site are copyrighted by the people who
+posted them. Exporting puzzles for personal use is fine, but
+it would be inappropriate to submit them to other puzzle archives
+on the web or distribute them in any other way
+without the permission of the puzzle author.
+</font>
+<form id="form" action="export.cgi" method="post" onsubmit="settarget()">
+<input type="hidden" name="go" value="1">
+<input type="hidden" name="sid" value="">
+<table>
+<tr><td>Puzzle&nbsp;ID:</td>
+<td colspan="2">#<input type="text" name="id" size="4" value=""></td></tr>
+<tr><td valign="top" rowspan="27">Format:</td>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="xml" checked></td><td>
+<a target="_blank" href="pbn_fmt.html">XML format</a> used by Jan Wolter's
+<a target="_blank" href="pbnsolve.html">pbnsolve</a> program. Supports multi-color puzzles.<br><input type="checkbox" name="xml_clue" checked>
+Include clues in export.<br><input type="checkbox" name="xml_soln" checked>
+Include intended solution in export.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="pnm"></td><td>
+.PNM image file of the puzzle goal. Clues are not
+included. These can be converted to things like GIF, JPEG
+and PNG files using the
+<a href="http://netpbm.sourceforge.net/">netpbm package</a>
+or many other image editing programs. Supports multi-color puzzles.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="csv"></td><td>
+CSV format for importing puzzles into spreadsheets. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="xls"></td><td>
+Excel format for importing puzzles into spreadsheets. Supports multi-color puzzles.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="ss"></td><td>
+.NON format suitable for use as input to
+<a target="_blank" href="http://www.comp.lancs.ac.uk/~ss/nonogram/">
+Steve Simpson</a>'s solver. <font color="red">Not for multi-color puzzles.</font><br><input type="checkbox" name="ss_soln" checked>
+Include intended solution in export.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="sg"></td><td>
+.SGRIDDLER format used by Juraj Simlovic's
+<a target="_blank" href="http://jsimlo.sk/griddlers/">Griddlers
+Solver</a>, a puzzle editor/solver for Windows.
+<font color="red">Not for multi-color puzzles.</font><br><input type="checkbox" name="sg_clue" checked>
+Include clues in export.<br><input type="checkbox" name="sg_soln" checked>
+Include intended solution in export.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="olsak"></td><td>
+.G file format used by the
+<a target="_blank" href="http://www.olsak.net/grid.html#English">
+Ol&#154;&aacute;ks'</a> solver. Supports multi-color puzzles.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="mk"></td><td>
+.MK file format also used by the
+<a target="_blank" href="http://www.olsak.net/grid.html#English">
+Ol&#154;&aacute;ks'</a> solver. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="nin"></td><td>
+.NIN File format used by
+<a target="_blank" href="http://students.mimuw.edu.pl/~jw209508/nonogram/">
+Jakub Wilk's nonogram solver program</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="dzn"></td><td>
+.DZN datafile in MiniZinc format used for solvers such as
+<a target="_blank" href="http://www.hakank.org/constraint_programming_blog/2009/09/at_last_2_a_nonogram_solver_us.html">
+Hakan Kjellerstrand's</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="ngb"></td><td>
+.NGB format as used by
+<a target="_blank" href="http://conduits.com/products/apps/nono.asp">
+NonoPocket</a>. This is untested. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="pl"></td><td>
+An input format as used by
+<a target="_blank" href="http://people.consolidated.net/kwolcott/PL/pictlogi.html">
+PictureLogic</a>. This is not the same as the .PDB format used
+for puzzle collections for that program. Those contain binary
+bitmap images of multiple puzzles. This has not been tested. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="lp"></td><td>
+The input format as used by
+<a target="_blank" href="http://www.oberlin.edu/math/faculty/bosch/pbn-page.html">
+Robert Bosch's LP solver</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="ish"></td><td>
+File format also used by Kenichi Ishigaki
+<a target="_blank" href="http://search.cpan.org/~ishigaki/Games-Nonogram-0.01/">
+Games::Nonogram</a> module for Perl. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="cwd"></td><td>
+.CWD text file format used by Alexander Meshcheryakov's
+<a target="_blank" href="http://qnonograms.sourceforge.net/">
+qnonogram</a> program. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="cwc"></td><td>
+.CWC file - an easily parsible multicolor extension of
+the CWD format used in <a target="_blank" href="http://webpbn.com/survyey/copris.html">Jan Wolter's
+Copris solver</a>. Supports multi-color puzzles.</td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="gecode"></td><td>
+A compiled in C++ format used in the
+<a target="_blank" href="http://www.gecode.org/doc-latest/reference/classNonogram.html">
+nonogram solver example for Gecode</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="faase"></td><td>
+Format for Fran Faase's
+<a target="_blank" href="http://www.iwriteiam.nl/Dpuzzle.html#nono">
+nonogram solver</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="makhorin"></td><td>
+Format for Andrew Makhorin's pbnsol nonogram solver. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="mathprog"></td><td>
+Format for Andrew Makhorin's example solver in the glpk distribution. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="py"></td><td>
+Format for version 1 of Kyle Keen's Python solver. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="keen"></td><td>
+Format for version 2 of Kyle Keen's Python solver. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="rkt"></td><td>
+Lisp-like format for Yuval Lando's Racket-based solver. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="syro"></td><td>
+Format for Evgeniy Syromolotov's <a target="_blank" href="http://sourceforge.net/projects/jsolver/">jsolver</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="natarov"></td><td>
+Format for Anton Natarov's <a target="_blank" href="http://a.teall.info/nonogram/">online solver</a>. <font color="red">Not for multi-color puzzles.</font></td></tr>
+<tr><td valign="top">
+<input type="radio" name="fmt" value="crossa"></td><td>
+Multicolor format for the <a target="_blank" href="http://www.cross-plus-a.com/html/cros6blj.htm">Cross+A</a> solver. Supports multi-color puzzles.</td></tr>
+<tr><td colspan="3">
+<input type="submit" value="Export"></td></tr>
+</table>
+</form>
+</body>
+</html>
