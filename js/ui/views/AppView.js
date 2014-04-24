@@ -1,4 +1,7 @@
 (function(exports) {
+    /**
+     * The main view for the whole app. All other views should be within this main view.
+     */
     exports.AppView = Backbone.View.extend({
         tagName: "body",
 
@@ -24,8 +27,10 @@
                 }
             };
 
+            /* use jQuery layout to divide the page into west and center regions */
             this.$el.layout(layoutOptions);
 
+            /* make sure our Backbone event handlers get attached */
             this.delegateEvents();
 
             return this;

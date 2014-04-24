@@ -1,4 +1,8 @@
 (function(exports) {
+
+    /**
+     * An open dialog used to open local files and scrape.
+     */
     exports.OpenDialogView = Backbone.View.extend({
         tagName: "div",
 
@@ -11,7 +15,13 @@
         },
 
         initialize: function() {
+            this.listenTo(AppModelSingleton, "cacheAlmostFull", this.handleCacheAlmostFull);
             this.render();
+        },
+
+        handleCacheAlmostFull: function(data) {
+            /* TODO: only show if dialog is open */
+            alert(data.message);
         },
 
         openFile: function(evt) {
@@ -23,7 +33,7 @@
             var self = this;
             AppModelSingleton.openFile(files[0], function(err) {
                 if (err) {
-                    //TODO don't use alert
+                    /* TODO don't use alert */
                     alert(err);
                 } else {
                     self.hide();
@@ -41,10 +51,11 @@
             var self = this;
             AppModelSingleton.scrapePuzzle(url, puzzleId, function(err) {
                 if (err) {
-                    //TODO: don't use alert
+                    /* TODO: don't use alert */
                     alert(err);
                 } else {
                     self.hide();
+                    self.$el.find("#puzzleId").val("");
                 }
             });
         },
@@ -52,8 +63,7 @@
         render: function() {
             var templateFunction = TemplateLoader.get("OpenDialog");
             var html = templateFunction({
-                //TODO: remove reference to ScraperManager
-                websites: ScraperManager.getSupportedURLs(),
+                websites: AppModelSingleton.getSupportedURLs(),
                 extensions: AppModelSingleton.getSupportedExtensions()
             });
             this.$el.html(html);

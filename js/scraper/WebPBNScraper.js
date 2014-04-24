@@ -1,7 +1,20 @@
 (function(exports) {
+    /**
+     * A SiteSpecificScraper for webpbn.com
+     */
     var WebPBNScraper = {};
 
+    /**
+     * See the description of scrape() in ScraperManager.js
+     */
     WebPBNScraper.scrape = function(id, callback) {
+        /* send a post request to our proxied version of webpbn.com (which is on our domain), since
+        you can't make a cross-domain HTTP request */
+
+        /* http://www.webpbn.com/export.cgi is a page where you can export puzzles in non format.
+        The export functionality works by making a POST request. If you look at the requests made
+        on that page using Chrome's developer tools, you can see that it makes a POST request with
+        these parameters. Just in case you're wondering where they came from :) */
         $.post("/__proxy__/webpbn.com/export.cgi", {
             go: "1",
             sid: "",
@@ -35,6 +48,10 @@
         });
     };
 
+    /**
+     * See the description of getURL() in ScraperManager.js
+     * @returns {string}
+     */
     WebPBNScraper.getURL = function() {
         return "webpbn.com";
     };

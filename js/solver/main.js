@@ -37,7 +37,7 @@
 // help propagate information that can't be found via arc consistency without the overhead of
 // full path consistency
 // The next step is "edge logic" which is a limited form of path consistency implemented in solver.js
-// the goal of this is to solve the vast majority (arouind 97% in practice) of puzzles created for
+// the goal of this is to solve the vast majority (around 97% in practice) of puzzles created for
 // humans without the performance overhead of true path consistency.
 // It works by temporarily performing path consistency between gaps in adjacent rows or columns and
 // seeing if this allows the pruning of any gap values. It does not store the actual path constraints

@@ -1,29 +1,98 @@
 (function(exports) {
+    /**
+     * A GriddlerModel represents a raw puzzle object and its view state.  Instances of this class
+     * are displayed by the UI. UI classes should listen for changes in the properties described
+     * below.
+     *
+     * This class also emits the following events:
+     *      "stepsChanged" - whenever the solution_steps array changes (no data is sent with this event)
+     */
     exports.GriddlerModel = Backbone.Model.extend({
         defaults: function() {
             return {
+                /**
+                 * The current solution step index being displayed. -1 means show the default board
+                 * without any steps applied (i.e., all squares are unknown).
+                 *
+                 * This property may be read and written to.
+                 *
+                 * @type {number} (integer)
+                 */
                 currentStep: -1,
+
+                /**
+                 * The raw puzzle object to encapsulate
+                 *
+                 * This property should be treated as READ-ONLY.
+                 *
+                 * @type {object}
+                 */
                 puzzle: null,
+
+                /**
+                 * The amount of time (in seconds) it took to solve the puzzle. -1 means the puzzle
+                 * hasn't been solved yet.
+                 *
+                 * This property should be treated as READ-ONLY. It will be set internally by this
+                 * class. Just listen for changes.
+                 *
+                 * @type {number} integer
+                 */
                 solveTime: -1,
-                /* Possible solve states:
-                    "solveNotStarted"
-                    "solveInProgress"
-                    "solveCompleted"
-                    "solveAborted"
-                    "solveFailed"
+
+                /**
+                 * Possible solve states:
+                 *  "solveNotStarted"
+                 *  "solveInProgress"
+                 *  "solveCompleted"
+                 *  "solveAborted" - e.g., user navigates away from page while solve is in progress
+                 *  "solveFailed"
+                 *
+                 * This property should be treated as READ-ONLY. It will be set internally by this
+                 * class. Just listen for changes.
+                 *
+                 *  @type {string}
                  */
                 solveState: "solveNotStarted",
+
+                /**
+                 * A name for this puzzle. For local files, this is usually the filename. For
+                 * scraped puzzles, this is usually "<website> <puzzleId>" (example: "webpbn 2")
+                 *
+                 * This property may be read and written to.
+                 *
+                 * @type {string}
+                 */
                 identifier: null,
-                /* Possible square sizes:
-                    "small",
-                    "medium",
-                    "large"
+
+                /**
+                 * Possible square sizes:
+                 *  "small",
+                 *  "medium",
+                 *  "large"
+                 *
+                 * This property may be read and written to.
+                 *
+                 *  @type {string}
                  */
                 squareSize: "medium",
+
+                /**
+                 * Represents where in the recents list this puzzle should appear. The GriddlerModel
+                 * with the highest ordering value is displayed at the top.
+                 *
+                 * This property may be read and written to.
+                 *
+                 * @type {number}
+                 */
                 orderingValue: 0
             };
         },
 
+        /**
+         * Begins solving this griddler. Any existing solution steps will be deleted. When the solve
+         * is complete, the solution will be inserted into the raw puzzle object.
+         */
         solve: function() {
             if (this.worker) {
                 throw new Error("puzzle is already being solved");
@@ -41,12 +110,13 @@
 
             this.worker = new Worker("js/solver/main.js");
 
-            //TODO: do something useful on this event
+            var self = this;
+
             this.worker.addEventListener("error", function(evt) {
-                console.log("A solver error occurred!!!");
+                self._cleanupSolve(true);
+                self.set("solveState", "solveFailed");
             });
 
-            var self = this;
             this.worker.addEventListener("message", function(evt) {
                 if (evt.data.type === "done") {
                     self._cleanupSolve(true);
@@ -73,6 +143,22 @@
             this.worker.postMessage(p);
         },
 
+        /**
+         * Stops the solver if it is currently in progress. If it isn't in progress, this function
+         * does nothing.
+         */
+        abortSolving: function() {
+            if (this.worker) {
+                this._cleanupSolve(false);
+                this.set("solveState", "solveAborted");
+            }
+        },
+
+        /**
+         * Inserts the solution as a 2D array into the raw puzzle object.
+         *
+         * @private
+         */
         _insertSolutionIntoPuzzle: function() {
             var p = this.get("puzzle");
 
@@ -84,7 +170,7 @@
             p.solution_steps.forEach(function(step) {
                 step.newvals.forEach(function(newval) {
                     var squareIndex = newval[0];
-                    var squareRow = ~~(squareIndex / p.cols.length);
+                    var squareRow = ~~(squareIndex / p.cols.length); //~~ casts to an integer
                     var squareCol = squareIndex % p.cols.length;
                     var squareValue = newval[1][0];
                     solutionArray[squareRow][squareCol] = squareValue;
@@ -95,6 +181,17 @@
             p.solution = solutionArray;
         },
 
+        /**
+         * Cleans up after a solve has been completed.
+         *
+         * @private
+         *
+         * @param {boolean} workerAlreadyTerminated Whether the worker was naturally terminated.
+         *      If the solve completed successfully or the worker encountered an error, it terminates
+         *      automatically, so this parameter should be true. See the comment inside the function
+         *      for why this parameter is needed.
+         *
+         */
         _cleanupSolve: function(workerAlreadyTerminated) {
             if (this.worker) {
                 /* worker.terminate() SOMETIMES fails on Firefox if the worker has already been terminated.
@@ -105,13 +202,6 @@
                 }
                 this.worker = null;
                 clearInterval(this.timer);
-            }
-        },
-
-        abortSolving: function() {
-            if (this.worker) {
-                this._cleanupSolve(false);
-                this.set("solveState", "solveAborted");
             }
         }
     });

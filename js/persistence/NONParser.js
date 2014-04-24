@@ -9,16 +9,6 @@
         return str;
     }
 
-//    function convertArrayElementsToNumbers(arr) {
-//        for (var i = 0; i < arr.length; ++i) {
-//            if (!isNumber(arr[i])) {
-//                return false;
-//            }
-//            arr[i] = +(arr[i]);
-//        }
-//        return true;
-//    }
-
     function convertArrayElementsToIntegers(arr) {
         for (var i = 0; i < arr.length; ++i) {
             if (!isNumber(arr[i])) {
@@ -42,17 +32,31 @@
         return !isNaN(parseFloat(str)) && isFinite(str);
     }
 
+    /**
+     * A FileParser for NON files. See the documentation for FileManager for a description of
+     * FileParsers.
+     */
     var NONParser = {};
 
+    /**
+     * See the documentation for getSupportedExtensions() in FileManager.js
+     *
+     * @returns {string[]}
+     */
     NONParser.getSupportedExtensions = function() {
         return ["non"];
     };
 
+    /**
+     * See the documentation for parseString() in FileManager.js
+     *
+     * @param fileContents {string}
+     * @returns {string|null}
+     */
     NONParser.parseString = function(fileContents) {
         var lines = fileContents.split("\n");
 
         var puzzle = {};
-        //TODO: don't define a property unless it exists in the file
         puzzle.grid = null;
         puzzle.solution = null;
         puzzle.metadata = {};
@@ -64,6 +68,7 @@
         var state = "metadata";
         var i = 0;
 
+        /* enter the state machine */
         while (i < lines.length) {
             var line = lines[i].trim();
             ++i;
@@ -71,12 +76,20 @@
                 continue;
             }
 
+            /* Part I: state transition criteria */
+
             if (state === "metadata" && (line === "rows" || line === "columns")) {
                 state = line;
                 continue;
             }
 
+            /* we allow columns to come before rows, even though rows are supposed to come before */
             if (state === "rows" && line === "columns") {
+                /* we are now exiting the rows state and going to the columns state. If the rows
+                array is empty, this puzzle does not have any rows, so throw an error.  Additionally,
+                if we've already processed columns, that means the file has two column declarations,
+                so throw an error. */
+
                 if (!puzzle.rows.length || puzzle.cols.length) {
                     state = "error";
                     break;
@@ -86,6 +99,10 @@
             }
 
             if (state === "columns" && line === "rows") {
+                /* we are now exiting the columns state and going to the rows state. If the columns
+                * array is empty, this puzzle does not have any columns, so throw an error. Additionally,
+                * if we've already processed rows, that means this file has two rows declarations,
+                * so throw an error */
                 if (!puzzle.cols.length || puzzle.rows.length) {
                     state = "error";
                     break;
@@ -98,6 +115,8 @@
                 state = "goal";
             }
 
+            /* Part II: do the work for each state */
+
             if (state === "metadata") {
                 var firstSpaceIndex = line.indexOf(" ");
                 if (firstSpaceIndex === -1) {
@@ -107,10 +126,10 @@
                 var key = line.substring(0, firstSpaceIndex);
                 var value = line.substring(firstSpaceIndex + 1).trim();
 
-                //TODO: handle escaped quotation marks
+                /* TODO: handle escaped quotation marks */
                 if (isQuotedString(value)) {
                     value = stripQuotes(value);
-                    //escape HTML special characters
+                    /* escape HTML special characters by passing them through a DOM element */
                     value = domElement.html(value).text();
                 } else if (isNumber(value)) {
                     value = +(value);
@@ -170,6 +189,7 @@
             }
         }
 
+        /* if the puzzle has no rows or columns, it's not valid */
         if (!puzzle.rows.length || !puzzle.cols.length) {
             state = "error";
         }
@@ -177,6 +197,9 @@
         return (state === "error") ? null : puzzle;
     };
 
+    /**
+     * See the documentation for serialize() in FileManager.js
+     */
     NONParser.serialize = function(puzzle) {
         var buffer = [];
         for (var key in puzzle.metadata) {
@@ -220,6 +243,7 @@
         exports.NONParser = NONParser;
     }
 
+    /* Register with FileManager */
     if (exports.FileManager) {
         exports.FileManager.registerParser(NONParser);
     }

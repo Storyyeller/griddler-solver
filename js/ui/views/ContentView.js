@@ -1,4 +1,7 @@
 (function(exports) {
+    /**
+     * A view for the center content area.
+     */
     exports.ContentView = Backbone.View.extend({
         tagName: "div",
 
@@ -13,6 +16,8 @@
 
         render: function() {
             this.$el.empty();
+
+            /* right now all this view contains ia a GriddlerView */
 
             var currentPuzzle = this.model.get("currentPuzzle");
 

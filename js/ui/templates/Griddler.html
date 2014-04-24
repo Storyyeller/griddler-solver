@@ -19,6 +19,10 @@
     </div>
 
     <div class="right">
+        <!-- the Placeholder text below is necessary so that the blue puzzle info bar gets initialized
+        to the correct height when it is first rendered by the browser (this is before the UI has
+         programmatically put any text there). If it gets initialized to the wrong height, jQuery
+         layout will incorrectly set the height of the north pane. -->
         <div class="solver-status">
             <span id="solveTime">Placeholder</span>
             <span class="restart-solver-container">

@@ -1,3 +1,7 @@
+# This script creates a local web server that serves static files in the script's directory.
+# In addition to serving static files, it proxies webpbn.com and griddlers.net so that the
+# scraper will be able to function.
+
 import sys
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 import BaseHTTPServer
@@ -6,6 +10,7 @@ import cgi
 
 # see http://stackoverflow.com/questions/12268835/is-it-possible-to-run-python-simplehttpserver-on-localhost-only
 
+# Request handler that supports simple proxying
 class RequestHandler(SimpleHTTPRequestHandler):
     # proxied_sites should be a set of websites of this form: ["griddlers.net", "webpbn.com"]
     # don't prepend http://www, and don't add any slashes

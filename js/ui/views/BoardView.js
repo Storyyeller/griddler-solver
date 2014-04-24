@@ -1,4 +1,10 @@
 (function(exports) {
+    /**
+     * Takes a 2D array and returns the length of the longest row.
+     *
+     * @param arr {Array[]} a 2d array
+     * @returns {number} the length of the longest row
+     */
     function lengthOfLongestContainedArray(arr) {
         if (!arr.length) {
             return -1;
@@ -13,6 +19,10 @@
         return max;
     }
 
+    /**
+     * A view for a Griddler grid. This view contains the grid and the hint squares only (no surrounding
+     * information like what step you're on, etc.)
+     */
     var BoardView = Backbone.View.extend({
         tagName: "div",
 
@@ -30,14 +40,19 @@
             this.squareClass = this._convertSizeToCSSClass(squareSize);
         },
 
-        //TODO: maintain history so you don't have to reapply every step if the user jumps backward
+        /**
+         * Updates the board so that it displays the currentStep.
+         */
         updateBoard: function() {
+            /* TODO: maintain history/cache so we don't have to reapply every step if the user jumps backward */
+
             var currentStep = this.model.get("currentStep");
             var puzzle = this.model.get("puzzle");
 
             if (currentStep === this.lastAppliedStep + 1) {
                 this._applySingleStep(puzzle.solution_steps[currentStep]);
             } else {
+                /* reset board to its initial state */
                 for (var i = 0; i < this.squares.length; ++i) {
                     this.squares[i].removeClass();
                     this.squares[i].addClass("board-square board-unknown-square");
@@ -45,6 +60,7 @@
                 }
 
                 if (currentStep > -1) {
+                    /* reapply steps starting from the beginning */
                     for (var i = 0; i <= currentStep; ++i) {
                         this._applySingleStep(puzzle.solution_steps[i]);
                     }
@@ -55,6 +71,13 @@
             this.lastAppliedStep = currentStep;
         },
 
+        /**
+         * Takes the current state of the board and applies the specified step to it.
+         *
+         * @param step {object} a step object (from a raw puzzle object)
+         *
+         * @private
+         */
         _applySingleStep: function(step) {
             var self = this;
             var puzzle = this.model.get("puzzle");
@@ -76,6 +99,14 @@
             });
         },
 
+        /**
+         * Highlights the squares that changed between the specified steps.
+         *
+         * @param currentStep {number} the current step for which you want to highlight changed squares
+         * @param previousStep {number} the previous step used for determing what changed
+         *
+         * @private
+         */
         _highlightChangedSquares: function(currentStep, previousStep) {
             var puzzle = this.model.get("puzzle");
             var self = this;
@@ -132,14 +163,12 @@
 
             this.$el.html(html);
 
+            /* TODO: inPlaySquaresContainer should be in dash-case, not camelCase (this requires
+             * changing the template and CSS too) */
             var elements = this.$el.find(".inPlaySquaresContainer").find(".board-square");
             this.squares = new Array(elements.length);
             for (var i = 0; i < elements.length; ++i) {
                 this.squares[i] = $(elements[i]);
-//                var col = i % puzzle.rows.length;
-//                if (col % 5 === 0) {
-//                    this.squares[i].css("border-left", "2px solid black");
-//                }
             }
 
             this.lastAppliedStep = -1;

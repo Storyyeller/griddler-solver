@@ -1,4 +1,10 @@
 (function(exports) {
+
+    /**
+     * A view containing a Griddler, the buttons for stepping through it, all the step information,
+     * the filename, the metadata, etc. Essentially, this view contains the Griddler board plus
+     * all of its surrounding information.
+     */
     exports.GriddlerView = Backbone.View.extend({
         tagName: "div",
 
