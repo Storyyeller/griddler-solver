@@ -51,7 +51,7 @@ body {
 }
 
 button[disabled] {
-    color: gray !important;
+    color: gray !important; /* Firefox doesn't color disabled buttons gray so this style is needed */
 }
 
 /*
@@ -137,7 +137,7 @@ button[disabled] {
     color: white;
     padding: 5px;
     text-align: center;
-    min-width: 860px; /* TODO: too small, right col wraps at this width with long text */
+    min-width: 860px;
     vertical-align: middle;
     border-bottom: 1px solid #33488d;
 }
@@ -157,7 +157,6 @@ button[disabled] {
 .griddler .info-bar .center {
     height: 100%;
     margin: 0 auto;
-    /* TODO: put this inside a nested div instead of on the center container? */
     display: table; /* this is set to table so that the buttons container can be
                     set to display: table-cell, which allows use of the
                     vertical-align: middle property */
@@ -301,7 +300,7 @@ button[disabled] {
     text-align: center;
     content: '\25CF';
     color: crimson;
-    font-size: 2em; /*14pt;*/
+    font-size: 2em;
     line-height: 10pt;
     vertical-align: top;
 }
